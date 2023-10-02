@@ -34,10 +34,10 @@ std::optional<typename Container::value_type> algorithm3(Container& A) {
 #include <cstdint>
 #include <iostream>
 
-// int main() {
-//     std::array<int, 6> arr{ 1, 2, 1, 2, 2, 2 };
-//     std::optional<int> a = algorithm3(arr);
-//     if (a) {
-//         std::cout << a.value() << '\n';
-//     }
-// }
+int main() {
+    std::array<int, 6> arr{ 1, 2, 1, 2, 2, 2 };
+    std::optional<int> a = algorithm3(arr);
+    if (a) {
+        std::cout << a.value() << '\n';
+    }
+}

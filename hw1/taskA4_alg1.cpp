@@ -31,9 +31,9 @@ std::optional<typename Container::value_type> algorithm1(const Container& A) {
 #include <cstdint>
 #include <iostream>
 
-// int main() {
-//     std::optional<int> a = algorithm1(std::array<int, 6>{ 1, 2, 1, 2, 2, 2 });
-//     if (a) {
-//         std::cout << a.value() << '\n';
-//     }
-// }
+int main() {
+    std::optional<int> a = algorithm1(std::array<int, 6>{ 1, 2, 1, 2, 2, 2 });
+    if (a) {
+        std::cout << a.value() << '\n';
+    }
+}
