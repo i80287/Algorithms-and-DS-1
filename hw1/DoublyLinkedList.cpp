@@ -1,10 +1,9 @@
-#include <cassert>
-#include <cstdint>
-#include <stdexcept>
-#include <type_traits>
-#include <utility> // std::swap
-#include <unordered_set>
-#include <vector>
+#include <cassert>       // assert
+#include <cstdint>       // size_t
+#include <stdexcept>     // std::runtime_error
+#include <utility>       // std::swap
+#include <unordered_set> // std::unordered_set
+#include <vector>        // std::vector
 
 struct Node {
     Node* next;
@@ -74,9 +73,10 @@ DoublyLinkedList::DoublyLinkedList(const DoublyLinkedList& other) {
 
     Node* current = head = new Node(other_ptr->data);
     nodes_.insert(current);
-    for (other_ptr = other_ptr->next; other_ptr != other.tail; other_ptr = other_ptr->next) {
+    for (other_ptr = other_ptr->next; other_ptr != nullptr; other_ptr = other_ptr->next) {
         assert(other_ptr != nullptr);
         Node* next = new Node(other_ptr->data);
+        nodes_.insert(next);
         next->previous = current;
         current->next = next;
         current = next;
@@ -132,35 +132,41 @@ void DoublyLinkedList::insert(Node* prev, int data) {
     prev->next = new_node;
 }
 
-void DoublyLinkedList::popFront() {
-    if (head == nullptr) {
+void DoublyLinkedList::popFront() { 
+    Node* old_head = head;
+    if (old_head == nullptr) {
         assert(tail == nullptr);
         throw std::runtime_error("Deletion error!");
     }
 
-    bool one_elements_list = head == tail;
-    Node* new_head = head->next;
-    nodes_.erase(head);
-    delete head;
+    Node* new_head = old_head->next;
+    nodes_.erase(old_head);
+    delete old_head;
     head = new_head;
-    if (one_elements_list) {
-        assert(new_head == nullptr);
+    if (new_head != nullptr) {
+        new_head->previous = nullptr;
+    }
+    else {
+        assert(old_head == tail);
         tail = nullptr;
     }
 }
 
 void DoublyLinkedList::popBack() {
-    if (tail == nullptr) {
+    Node* old_tail = tail;
+    if (old_tail == nullptr) {
         throw std::runtime_error("Deletion error!");
     }
 
-    bool one_element_list = head == tail;
-    Node* new_tail = tail->previous;
-    nodes_.erase(tail);
-    delete tail;
+    Node* new_tail = old_tail->previous;
+    nodes_.erase(old_tail);
+    delete old_tail;
     tail = new_tail;
-    if (one_element_list) {
-        assert(new_tail == nullptr);
+    if (new_tail != nullptr) {
+        new_tail->next = nullptr;
+    }
+    else {
+        assert(head == old_tail);
         head = nullptr;
     }
 }
@@ -176,21 +182,17 @@ void DoublyLinkedList::pop(Node* pos) {
     nodes_.erase(pos);
     delete pos;
 
-    if (pos == head) {
-        if (next == nullptr) {
-            assert(head == tail);
-            tail = nullptr;
-        }
+    if (head == tail) {
+        assert(head == pos && next == nullptr && prev == nullptr);
+        head = tail = nullptr;
+        return;
+    }
 
+    if (pos == head) {
         head = next;
     }
 
     if (pos == tail) {
-        if (prev == nullptr) {
-            assert(head == tail);
-            head = nullptr;
-        }
-
         tail = prev;
     }
 
@@ -299,6 +301,8 @@ void CheckList(const DoublyLinkedList& lst, const std::vector<int>& vec) {
         return;
     }
 
+    assert(current != nullptr && current->previous == nullptr);
+    assert(lst.tail != nullptr && lst.tail->next == nullptr);
     for (int value : vec) {
         Assert(current != nullptr && value == current->data);
         current = current->next;
@@ -331,9 +335,15 @@ void Reverse(std::vector<int>& vec) {
     }
 }
 
-int main() {
-    std::vector<int> vec{1, 2, 1, 1, 2, 2, 2, 1, 1, 3, 2, 3, 4, 4, 3, 4 };
-    DoublyLinkedList lst{vec};
+void Replace(std::vector<int>& vec, int oldElem, int newElem) {
+    for (int& elem : vec) {
+        if (elem == oldElem) {
+            elem = newElem;
+        }
+    }
+}
+
+void TestList(DoublyLinkedList& lst, std::vector<int>& vec) {
     CheckList(lst, vec);
 
     lst.removeDuplicates();
@@ -350,6 +360,12 @@ int main() {
         CheckList(lst, vec);
         lst.popFront();
         vec.erase(vec.begin());
+        CheckList(lst, vec);
+        lst.pushFront(i);
+        vec.insert(vec.begin(), i);
+        CheckList(lst, vec);
+        lst.popBack();
+        vec.pop_back();
         CheckList(lst, vec);
     }
 
@@ -369,7 +385,7 @@ int main() {
     vec.erase(vec.end() - 1);
     CheckList(lst, vec);
 
-    Assert(lst.head == nullptr && lst.tail == nullptr);
+    Assert(lst.head == nullptr && lst.tail == nullptr && vec.empty());
 
     lst.pushBack(1);
     vec.push_back(1);
@@ -379,8 +395,55 @@ int main() {
     vec.insert(vec.begin(), 2);
     CheckList(lst, vec);
 
-    for (auto p = lst.head; p != nullptr; p = p->next) { printf("%d ", p->data); } putchar('\n');
-    for (int elem : vec) { printf("%d ", elem); } putchar('\n');
+    for (int i = 0; i <= 5; i++) {
+        lst.pushBack(i >> 1);
+        vec.push_back(i >> 1);
+        CheckList(lst, vec);
+    }
 
+    lst.replace(1, 2);
+    Replace(vec, 1, 2);
+    CheckList(lst, vec);
+
+    lst.removeDuplicates();
+    RemoveDuplicates(vec);
+    CheckList(lst, vec);
+
+    lst.popFront();
+    vec.erase(vec.begin());
+    CheckList(lst, vec);
+
+    lst.popFront();
+    vec.erase(vec.begin());
+    CheckList(lst, vec);
+
+    Assert(lst.head == nullptr && lst.tail == nullptr && vec.empty());
+
+    for (int i = 345435; i <= 345435 + 1; i++) {
+        lst.pushBack(i);
+        vec.push_back(i);
+        CheckList(lst, vec);
+    }
+
+    for (int i = 0; i < 2; i++) {
+        lst.popBack();
+        vec.pop_back();
+        CheckList(lst, vec);
+    }
+
+    Assert(lst.head == nullptr && lst.tail == nullptr && vec.empty());
+
+    // for (auto p = lst.head; p != nullptr; p = p->next) { printf("%d ", p->data); } putchar('\n');
+    // for (int elem : vec) { printf("%d ", elem); } putchar('\n');
+    puts("Passed");
+}
+
+int main() {
+    std::vector<int> vec1{1, 2, 1, 1, 2, 2, 2, 1, 1, 3, 2, 3, 4, 4, 3, 4 };
+    std::vector<int> vec2{vec1};
+    DoublyLinkedList lst1{vec1};
+    DoublyLinkedList lst2{lst1};
+    TestList(lst1, vec1);
+    TestList(lst2, vec2);
     return 0;
 }
