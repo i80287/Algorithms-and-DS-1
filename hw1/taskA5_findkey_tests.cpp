@@ -1,4 +1,4 @@
-#include "findkey.hpp"
+#include "taskA5_findkey.hpp"
 
 #include <iostream>
 #include <exception>
@@ -118,8 +118,8 @@ void ShortTest2(size_t& test_cnt) {
 
 } // namespace tests
 
-int main() {
-    size_t test_cnt = 1;
-    tests::ShortTest1(test_cnt);
-    tests::ShortTest2(test_cnt);
-}
+// int main() {
+//     size_t test_cnt = 1;
+//     tests::ShortTest1(test_cnt);
+//     tests::ShortTest2(test_cnt);
+// }
