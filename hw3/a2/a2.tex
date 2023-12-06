@@ -1,0 +1,125 @@
+\documentclass[11pt,a4paper]{article}
+
+\input{preamble}
+
+% \addtolength{\textwidth}{130pt}
+% \addtolength{\hoffset}{-2cm}
+% \addtolength{\voffset}{-2cm}
+% \addtolength{\textheight}{90pt}
+
+% \tolerance=3000
+% \def\baselinestretch{1.1}
+% \flushbottom
+
+% \parindent=1cm
+
+\begin{document}
+
+\section*{Задание A2}
+
+Для более репрезентативных наблюдений размер массивов был немного увеличен (в 5 раз, до 20000 элементов)
+
+1. Графики со временем работы алгоритма \textit{Merge Sort} на неотсортированных, \\
+отсортированных в обратном порядке и "почти" отсортированных массивах
+
+\subsection*{Merge Sort}
+
+% \begin{figure}[hp] \centering \includegraphics[scale=0.5]{merge_sort_random_data.PNG} \end{figure}
+
+\hspace*{-2cm} \includegraphics[scale=0.5]{merge_sort_random_data.PNG}
+
+\hspace*{-2cm} \includegraphics[scale=0.5]{merge_sort_reversed_sorted_data.PNG}
+
+\hspace*{-2cm} \includegraphics[scale=0.5]{merge_sort_almost_sorted_data.PNG}
+
+\pagebreak
+
+2. Графики со временем работы алгоритма \textit{Hybrid Sort} (\textit{Merge Sort} + \textit{Insertion Sort})
+
+Сначала указаны 3 графика для реализации с границей остановки рекурсии, равной 5, далее - аналогично по 3 графика с границей 10, 20 и 50
+
+\subsection*{Hybrid Sort с границей 5}
+
+\hspace*{-2cm} \includegraphics[scale=0.5]{hybrid_sort_5_random_data.PNG}
+
+\hspace*{-2cm} \includegraphics[scale=0.5]{hybrid_sort_5_reversed_sorted_data.PNG}
+
+\hspace*{-2cm} \includegraphics[scale=0.5]{hybrid_sort_5_almost_sorted_data.PNG}
+
+\subsection*{Hybrid Sort с границей 10}
+
+\hspace*{-2cm} \includegraphics[scale=0.5]{hybrid_sort_10_random_data.PNG}
+
+\hspace*{-2cm} \includegraphics[scale=0.5]{hybrid_sort_10_reversed_sorted_data.PNG}
+
+\hspace*{-2cm} \includegraphics[scale=0.5]{hybrid_sort_10_almost_sorted_data.PNG}
+
+\subsection*{Hybrid Sort с границей 20}
+
+\hspace*{-2cm} \includegraphics[scale=0.5]{hybrid_sort_20_random_data.PNG}
+
+\hspace*{-2cm} \includegraphics[scale=0.5]{hybrid_sort_20_reversed_sorted_data.PNG}
+
+\hspace*{-2cm} \includegraphics[scale=0.5]{hybrid_sort_20_almost_sorted_data.PNG}
+
+\subsection*{Hybrid Sort с границей 50}
+
+\hspace*{-2cm} \includegraphics[scale=0.5]{hybrid_sort_50_random_data.PNG}
+
+\hspace*{-2cm} \includegraphics[scale=0.5]{hybrid_sort_50_reversed_sorted_data.PNG}
+
+\hspace*{-2cm} \includegraphics[scale=0.5]{hybrid_sort_50_almost_sorted_data.PNG}
+
+
+3. Выводы:
+
+\begin{tabular}{rl}
+    & $\bullet$ На почти отсортированных данных алгоритмы
+    \textit{Merge Sort} и \textit{Hybrid Sort} работают \\
+    & в среднем в 4-5 раза быстрее \\
+
+    & $\bullet$ На данных, отсортированных в обратном порядке,
+    алгоритмы \textit{Merge Sort} и \textit{Hybrid Sort} \\
+    & работают в среднем в 2-3 раза быстрее \\
+
+    & $\bullet$ Время работы \textit{Hybrid Sort} с границей
+    5 незначимо отличается от времени работы \textit{Merge Sort} \\
+
+    & $\bullet$ Время работы \textit{Hybrid Sort} с границами
+    5, 10, 20 и 50 монотонно убывает. В среднем, время \\
+    & работы \textit{Hybrid Sort} с границей 50 меньше
+    времени работы \textit{Merge Sort} в $\frac{4}{3}$ раза \\
+\end{tabular}
+\\
+
+\pagebreak
+
+О реализации:
+
+\begin{tabular}{rl}
+    &  Функции для измерения времени работы
+    алгоритмов находятся в пространстве \\
+    & имён \textit{measure\_tools} \\
+    & Функции для подготовки и сохранения
+    данных находятся в пространстве \\
+    & имён \textit{data\_tools} \\
+    & Функции для построения графиков находятся 
+    в пространстве имён \textit{graphics\_tools} \\
+    & и используют программу \textit{gnuplot},
+    передавая ей команды через \textit{pipe} \\
+    & Результаты тестирования сохраняются в
+    файлы, имена которых описываются паттерном \\
+    & "SortingAlgoName\_InputDataType.txt" \\
+    & Имена изображений в формате \textit{.png} 
+    с графиками описываются аналогичным паттерном \\
+    & Использованный компилятор и его версия (нет ошибок компиляции): \\ 
+    & \,\,\,\,\, \textit{g++} 13.2.0 (на Windows 10) \\
+    & \,\,\,\,\, \textit{g++}  11.4.0 (на Ubuntu 22.04) \\
+    & Использованные версии языка (нет ошибок компиляции): 
+    \textit{C++20} и \textit{C++23} \\
+    & Использованная версия \textit{gnuplot}: \\
+    & \,\,\,\,\, gnuplot 5.4 patchlevel 8 (на Windows 10) \\
+    & \,\,\,\,\, gnuplot 5.4 patchlevel 2 (на Ubuntu 22.04) \\
+\end{tabular}
+
+\end{document}

@@ -1,0 +1,66 @@
+\documentclass[11pt,a4paper]{article}
+
+\input{preamble}
+
+% \addtolength{\textwidth}{130pt}
+% \addtolength{\hoffset}{-2cm}
+% \addtolength{\voffset}{-2cm}
+% \addtolength{\textheight}{90pt}
+
+% \tolerance=3000
+% \def\baselinestretch{1.1}
+% \flushbottom
+
+% \parindent=1cm
+
+\begin{document}
+
+\section*{Задание A1}
+
+1. Для вычисления приблизительного значения числа $ \pi $ была разработана функция \\
+\textit{CalcApproxPi}, которая вызывает вспомогательные функции \textit{GeneratePointsInSquare} и \\
+\textit{CountPointsInCircle}. Запись значений в файлы происходит в функции \textit{WriteResultsToFiles}.
+
+    Для построения графиков в функции \textit{PlotGraphs} используется приложение \textit{gnuplot}, \\
+команды к которому передаются через \textit{pipe}, а данные - через файлы с записанными ранее \\
+результатами измерений.
+
+    Для воспроизводимости измерений генератор псевдослучайных чисел (\textit{std::mt19937}) \\
+инициализируется константным значением \textit{kRndSeed}.
+
+    Данные сохраняются в файлы pi\_values\_tests и percntg\_diff\_tests.data
+
+\begin{figure}[hp]
+    \centering
+    \includegraphics[scale=0.65]{a1_img1.png}
+\end{figure}
+
+(компилируемость кода проверялась при помощи компилятора \textit{g++} версии 13.2.0 с флагами компиляции:
+-std=c++2b -Wall -Wextra -Wpedantic -Werror -Wunused -pedantic-errors -Wconversion -Wshadow -Wnull-dereference -Warith-conversion -Wcast-align=strict -Warray-bounds=2)
+
+(использованная версия \textit{gnuplot}: gnuplot 5.4 patchlevel 8)
+
+\pagebreak
+
+2. По результатам проведённых экспериментов было построено 2 графика:
+
+\begin{tabular}{rl}
+    & $\bullet$ зависимость приблизительного значения числа $\pi(N)$ от $N$ (график 1) \\
+    & $\bullet$ зависимость относительного отклонения (в \%) от $N$ (график 2) \\ 
+    & \,\,\,\, (вычисляется по формуле $ \left| \frac{\pi(N) - \pi}{\pi} \right| * 100 = \left| 1 - \frac{\pi(N)}{\pi} \right| * 100 $) \\
+\end{tabular}
+
+График 1:
+
+На данном графике синяя горизонтальная прямая - значение числа $ \pi $ (с точностью, которую позволяет получить стандарт IEEE-754)
+
+\hspace*{-2cm} \includegraphics[scale=0.5]{pi_values_graph.PNG}
+
+График 2:
+
+\hspace*{-2cm} \includegraphics[scale=0.5]{percentage_diff_graph.PNG}
+
+3. Как видно из графиков, точность, с которой вычисляется значение числа $\pi$, в среднем увеличивается 
+с увеличением количества точек, однако при бОльших значениях $N$ значение $\pi(N)$ медленнее приближается к числу $\pi$
+
+\end{document}
