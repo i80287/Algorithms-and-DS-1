@@ -1,0 +1,7 @@
+PWD /home/waste/Projects/tex/Calculus-HSE-SE/lecture_notes
+INPUT /var/lib/texmf/web2c/luahbtex/lualatex.fmt
+INPUT ./macros.tex
+OUTPUT macros.log
+INPUT /usr/share/texlive/texmf-dist/tex/latex/latexconfig/lualatexquotejobname.lua
+INPUT /usr/share/texlive/texmf-dist/tex/latex/base/ltluatex.lua
+INPUT /usr/share/texlive/texmf-dist/tex/latex/l3kernel/expl3.lua
