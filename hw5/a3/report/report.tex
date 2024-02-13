@@ -4,15 +4,19 @@
 
 \input{preamble}
 \input{macros}
-\input{letterfonts}
+
+\DeclareMathOperator{\Hash}{Hash}
+\DeclareMathOperator{\hash}{hash}
 
 \begin{document}
 
+\section*{Theory}
+
 \mcclm{Утверждение 1}{}{
-    В использованной хэш функции используется знаковая арифметика, тип \textbf{long long}
+    В данной хэш функции используется знаковая арифметика, тип \textbf{long long}
 
     Считая, что используется беззнаковая арифметика, то есть тип \textbf{unsigned long long},
-    результат работы хэш функции не изменится
+    результат работы хэш функции не изменится (то есть по-битово значения будут совпадать)
 \mcprf{
 \begin{split}
     & \text{В хэш функции используются только операции умножения и сложения } \\
@@ -22,24 +26,260 @@
 }
 }
 
-\mcclarf{Уточнение 1}{
-    При дальнейшем описании и построении искомого алгоритма будем считать, что используются только
-    символы таблицы ASCII из множества $ ['a'; 'z'] $. Из этого следует, что множители при степенях
-    \textbf{p} принадлежат множеству $ \{ 1, 2, ..., 26 \} $
+\mcclarf{Уточнение}{
+    Далее в рассуждениях используются следующие обозначения:
+
+\begin{tabular}{rl}
+    $\bullet$ & $ \Sigma = \{ 'a', 'b', ..., 'z' \} $ - символы таблицы ASCII с кодами от 97 до 122 \\
+    $\bullet$ & $ \sigma = \{ 1, 2, ..., 26 \} $ \\
+              & При дальнейшем описании и построении искомого алгоритма будем считать, \\
+              & что используются только символы таблицы ASCII из множества $ \Sigma $ \\
+    $\bullet$ & $ \Sigma^* $ - замыкание Клини, т.е. множество всех слов конечной длины, \\
+              & составленных из символов множества $\Sigma$, в том числе пустое слово $\veps$, $|\veps| = 0 $ \\
+    $\bullet$ & $ \Sigma^+ $ - плюс Клини, т.е. множество всех слов конечной длины, \\
+              & составленных из символов множества $\Sigma$, без пустого слова $\veps$ \\
+              & $ \Sigma^+ = \Sigma^* \setminus \{ \veps \} $ \\
+    $\bullet$ & $ p $ - данное простое число, $ p = 31 $ \\
+    $\bullet$ & $ \Hash(s) $ - математическое значение полиномиальной хэш функции строки $s \in \Sigma^*$ \\
+              & без операция взятия остатка по модулю $2^{64}$ \\
+    $\bullet$ & $ \hash(s) $ - значение хэш функции строки $s \in \Sigma^*$ по модулю $2^{64}$, т.е. \\
+              & $ \forall s \in \Sigma^*: \hash(s) = \Hash(S) \bmod 2^{64} $ \\
+              & По утверждению 1 можно считать, что данная полиномиальная хэш функция - $\hash$ \\
+    $\bullet$ & $ \overline{s_0 s_1 ... s_{n-1}} $ - строка, состоящая из последовательности строк $\{ s_i \}_{i = 0}^{n - 1}$, \\
+              & последовательно сконкатенированных в одну строку \\
+              & (мы не определяем это формально, потому что \sout{автору лень} тогда мы утонем в формализме \\
+              & при доказательстве задачи, которая решается за 15 минут\sout{, а ещё автору лень}) \\
+\end{tabular}
 }
 
-\mcclm{Утверждение 2}{}{
-    При подсчёте хэш функции от строки $s$ получается число в системе счисления по основанию $p$,
-    где цифры числа принадлежат множеству $ \{ 1, 2, ..., 26 \} $ 
+\mclemma{Лемма 1}{
+    При подсчёте хэш функции $\Hash$ от строки $s \in \Sigma^*$ получается число в системе счисления по основанию $p$,
+    где цифры числа $ \Hash(s) $ в с.с. по основанию $p$ соответствуют символам строки $s$ и принадлежат множеству $ \sigma $ 
 \mcprf{
 \begin{split}
-    & \text{Следует из уточнения 1} \\
+    & \text{Следует из того, что при подсчёте хэш функции } \forall i \in \{ 0, 1, ..., |s| - 1 \}: s[i] - 'a' + 1 \in \sigma \subset \{ 0, 1, ..., p - 1\} \\
+    & \text{И при этом $s[i] - 'a' + 1$ умножается на } p^i: \Hash(s) = \sum_{i = 0}^{|s| - 1} (s[i] - 'a' + 1) \cdot p^i  \\
 \end{split}
 }
 }
 
-\mcprop{Предложение 1}{
-    Пусть 
+\pagebreak
+
+\mclemma{Лемма 2}{
+    Пусть существует такая строка $s_0 \in \Sigma^+ $ длины $|s_0|$, что $ \hash(s_0) = 0 $
+
+    Тогда $ \forall n \in \Nset[]: \hash(\overline{\underset{n \text{ раз}}{s_0 s_0 ... s_0}}) = 0 $
+
+\mcprf{
+\begin{split}
+    & \text{1. По построению хэш функции $\Hash$:} \\
+    & \Hash(s_0) = \sum_{i = 0}^{|s_0| - 1} (s_0[i] - 'a' + 1) \cdot p^i \\
+    & \text{2. Тогда: } \\
+    & \Hash(\overline{s_0 s_0 ... s_0}) 
+        = \sum_{i = 0}^{n \cdot |s_0| - 1} (\overline{s_0 s_0 ... s_0}[i] + 'a' - 1) \cdot p^i = \\
+    &   = \sum_{j = 0}^{n - 1} \sum_{i = |s_0| \cdot j}^{|s_0| \cdot (j + 1) - 1} (\overline{s_0 s_0 ... s_0}[i] + 'a' - 1) \cdot p^i = \\
+    &   = \sum_{j = 0}^{n - 1} p^{|s_0| \cdot j} \sum_{i = |s_0| \cdot j}^{|s_0| \cdot (j + 1) - 1} (\overline{s_0 s_0 ... s_0}[i] + 'a' - 1) \cdot p^{i - |s_0| \cdot j} = \\
+    &   = \sum_{j = 0}^{n - 1} p^{|s_0| \cdot j} \sum_{i = 0}^{|s_0| - 1} (\overline{s_0 s_0 ... s_0}[i + |s_0| \cdot j] + 'a' - 1) \cdot p^{i} = \\
+    &   = \sum_{j = 0}^{n - 1} p^{|s_0| \cdot j} \sum_{i = 0}^{|s_0| - 1} (s_0[i] + 'a' - 1) \cdot p^{i} 
+        = \sum_{j = 0}^{n - 1} p^{|s_0| \cdot j} \cdot \Hash(s_0)
+        = \Hash(s_0) \cdot \sum_{j = 0}^{n - 1} p^{|s_0| \cdot j} \\
+    & \hash(s_0) = 0 
+        \implies \Hash(s_0) \bmod 2^{64} = 0 
+        \implies \hash(\overline{s_0 s_0 ... s_0}) = \Hash(\overline{s_0 s_0 ... s_0}) \bmod 2^{64} = \\
+    & = \left(\Hash(s_0) \cdot \sum_{j = 0}^{n - 1} p^{|s_0| \cdot j}\right) \bmod 2^{64} = 0 \\
+\end{split}
 }
+}
+
+\pagebreak
+
+\mclemma{Лемма 3}{
+    Пусть существует такая строка $s_0 \in \Sigma^+$ длины $|s_0|$, что $ \hash(s_0) = 0 $
+
+    Тогда $ \forall s \in \Sigma^* \, \forall n \in \Nset[]: \hash(\overline{s \underset{n \text{ раз}}{s_0 s_0 ... s_0}}) = \hash(s) $
+\mcprf{
+\begin{split}
+    & \text{1. По построению хэш функции: } \\
+    & \Hash(\overline{s s_0 s_0 ... s_0}) 
+        = \sum_{i = 0}^{|s| + n \cdot |s_0| - 1} (\overline{s s_0 s_0 ... s_0}[i] - 'a' + 1) \cdot p^i = \\
+    &   = \sum_{i = 0}^{|s| - 1} (\overline{s s_0 s_0 ... s_0}[i] + 'a' - 1) \cdot p^i 
+        + \sum_{i = |s|}^{|s| + n \cdot |s_0| - 1} (\overline{s s_0 s_0 ... s_0}[i] + 'a' - 1) \cdot p^i  \\
+    &   = \sum_{i = 0}^{|s| - 1} (s[i] + 'a' - 1) \cdot p^i 
+        + p^{|s|} \cdot \sum_{i = |s|}^{|s| + n \cdot |s_0| - 1} (\overline{s s_0 s_0 ... s_0}[i] + 'a' - 1) \cdot p^{i - |s|} = \\
+    &   = \Hash(s) + p^{|s|} \cdot \sum_{i = |s|}^{|s| + n \cdot |s_0| - 1} (\overline{s s_0 s_0 ... s_0}[i] + 'a' - 1) \cdot p^{i - |s|} = \\
+    &   = \Hash(s) + p^{|s|} \cdot \sum_{i = 0}^{n \cdot |s_0| - 1} (\overline{s s_0 s_0 ... s_0}[i + |s|] + 'a' - 1) \cdot p^i = \\
+    &   = \Hash(s) + p^{|s|} \cdot \sum_{i = 0}^{n \cdot |s_0| - 1} (\overline{s_0 s_0 ... s_0}[i] + 'a' - 1) \cdot p^i = \\
+    &   = \Hash(s) + p^{|s|} \cdot \Hash(\overline{s_0 s_0 ... s_0}) \\
+    & \text{2. по лемме 2 $\hash(\overline{s_0 s_0 ... s_0}) = 0 $, тогда:} \\
+    & \hash(\overline{s s_0 s_0 ... s_0}) 
+        = \Hash(\overline{s s_0 s_0 ... s_0}) \bmod 2^{64}
+        = \Hash(s) \bmod 2^{64} + \left(p^{|s|} \cdot \Hash(\overline{s_0 s_0 ... s_0})\right) \bmod 2^{64} = \\
+    &   = \hash(s) + \left(p^{|s|} \cdot \hash(\overline{s_0 s_0 ... s_0})\right) \bmod 2^{64} 
+        = \hash(s) \\
+\end{split}
+}
+}
+
+\mccorollar{Следствие}{
+    Если существует хотя бы одна строка $s_0 \in \Sigma^*$, такая что $ |s_0| \ge 1 \wedge \hash(s_0) = 0$, то
+    $\forall s \in \Sigma^*$ можно получить хотя бы счётно бесконечно много попарно различных строк, таких
+    что их хэш равен $\hash(s)$, причём алгоритм построения искомой последовательности строк следует из леммы 3:
+    члены последовательности получаются конкатенацией строки $s$ с $n$ строками $s_0$.
+}
+
+\mcclarf{Уточнение об имплементации алгоритма}{
+    Если длина выбранной строки $s_0$ (для которой $\hash(s_0) = 0$) равна $|s_0|$ и нужно сгенерировать $N$ искомых 
+    строк с хэшом, равным данной строке $s$ длины $|s|$, то асимптотически точная граница времени работы приведённого 
+    ниже алгоритма равна $ \Theta\left(|s| + N |s_0|\right)$
+
+    В приведённом ниже алгоритме строка $s_0$ (можно генерировать разные в зависимости от шаблонного параметра) 
+    имеет длину не более $\textit{kMaxZeroRemStringSize} = 20$ и генерируется на этапе компиляции (если версия языка $\ge$ C++23).
+}
+
+\pagebreak
+
+\section*{Practice}
+
+Алгоритм реализован в файле \textit{collisions\_gen.hpp}
+
+Публичный интерфейс для генерации строк находится в пространстве имён \text{collisions\_gen}
+
+Реализация находится во вложенном пространстве имён collisions\_gen::impl
+
+Публичный интерфейс:
+
+\begin{tabular}{rl}
+    $\bullet$ & \textit{polynomial\_hash} - данная хэш функция \\
+    $\bullet$ & \textit{polynomial\_hash\_safe} - данная хэш функция, использующая беззнаковую арифметику \\
+    $\bullet$ & \textit{generate\_strings\_with\_same\_hash} - функция для генерации \\
+              & необходимого количества строк, хэш которых равен хэшу данной строки \\
+              & Кроме 2 входных аргументов имеет шаблонный параметра Seed, который \\
+              & может изменить генерирующиеся строки. По умолчанию равен \textit{impl::kDefaultStartN = 1} \\
+              & следующее по возрастанию значение, меняющее выходные данные $ = 13$ \\
+\end{tabular}
+
+\begin{cppcode}
+
+namespace collisions_gen {
+
+/// @brief Default number of strings generated by @fn generate_strings_with_same_hash
+inline constexpr uint32_t kDefaultSize = 2000;
+
+/// @brief Polynomial hash function.
+///        This function causes UB and hence not marked constexpr.
+/// @param s
+/// @return polynomial hash of the @a `s`
+long long polynomial_hash(std::string_view s) noexcept;
+
+/// @brief Polynomial hash function.
+/// @param s
+/// @return polynomial hash of the @a `s`
+constexpr uint64_t polynomial_hash_safe(std::string_view s) noexcept;
+
+/// @brief Functions that generates @a `size` strings with the same
+///        hash as @a `str` has. Hash functions is @fn polynomial_hash.
+/// @tparam Seed optional argument that may change generated set of string.
+/// @param str Initial string.
+///            If empty, and Seed = @ref impl::kDefaultStartN,
+///            then @a `size` strings with hash = 0 will be generated.
+/// @param size Number of strings that should be generated.
+/// @return vector of @a `size` pairwise different strings,
+///         each one has the same hash as @a `str` has.
+template <uint32_t Seed = impl::kDefaultStartN>
+std::vector<std::string> generate_strings_with_same_hash(std::string_view str = "", 
+uint32_t size = kDefaultSize);
+
+}  // namespace collisions_gen
+
+\end{cppcode}
+
+Вызов генератора строк находится в файле \textit{main.cpp}
+
+В качестве первого аргумента исполняемому файлу можно передать начальную строку, к которой будут дописываться строки $s_0$
+
+В качестве второго аргумента исполняемому файлу можно передать количество строк, которое надо сгенерировать
+
+(также можно не передавать никаких параметров, будут выбраны дефолтные: пустая строка и 2000 строк)
+
+\begin{cppcode}
+
+void write_to_file(const std::vector<std::string>& strs, std::string_view fname);
+
+std::pair<const char*, uint32_t> parse_arguments(int argc, const char* const argv[]) noexcept;
+
+int main(int argc, const char* const argv[]) {
+    auto [initial_string, size] = parse_arguments(argc, argv);
+    auto res = collisions_gen::generate_strings_with_same_hash(initial_string, size);
+    write_to_file(res, "strings.txt");
+    return 0;
+}
+
+\end{cppcode}
+
+\pagebreak
+
+\section*{Tested compilers \& options}
+
+При компиляции компилятором g++ 13.2.0 из среды msys2 на Windows 10 22H2 использовались следующие флаги:
+
+-std=c++20, -std=c++2a, -std=c++2b для версий языка C++20 и C++23, а также:
+
+\begin{cppcode}
+-D_GLIBCXX_DEBUG
+-D_GLIBCXX_DEBUG_PEDANTIC
+-D_FORTIFY_SOURCE=3
+-fdiagnostics-color=always
+-fstack-protector-all
+-mshstk
+-Wall
+-Wextra
+-Wfloat-equal
+-Wlogical-op
+-Wcast-qual
+-Wpedantic
+-Wshift-overflow=2
+-Wduplicated-cond
+-Wunused -Wconversion
+-Wunsafe-loop-optimizations
+-Wshadow
+-Wnull-dereference
+-Wundef 
+-Wwrite-strings
+-Wsign-conversion
+-Warith-conversion
+-Wmissing-noreturn
+-Wunreachable-code
+-Wcast-align
+-Warray-bounds=2
+\end{cppcode}
+
+При компиляции компилятором clang++ 16.0.5 из среды msys2 на Windows 10 22H2 использовались следующие флаги:
+
+-std=c++20, -std=c++2a, -std=c++2b для версий языка C++20 и C++23, а также:
+
+\begin{cppcode}
+-fcolor-diagnostics
+-fansi-escape-codes
+-fsanitize="address,undefined"
+-fstack-protector-all
+-D_FORTIFY_SOURCE=3
+-Wp,-D_GLIBCXX_DEBUG
+-mshstk
+-O2
+-Wall
+-Wextra
+-Wpedantic
+-Wunused
+-Wconversion
+-Wshadow
+-Wnull-dereference
+-Wundef
+-Wwrite-strings
+-Wsign-conversion
+-Wmissing-noreturn
+-Wunreachable-code
+-Wcast-align
+-Warray-bounds
+\end{cppcode}
 
 \end{document}
