@@ -1,0 +1,139 @@
+\documentclass{report}
+% \includeonly{pars/9_continuous_functions_and_limits, parts/10_integration_of_functions}
+% \documentclass[11pt,a4paper]{article}
+
+\input{preamble}
+\input{macros}
+
+\begin{document}
+
+\begin{cppcode}
+INSERT(key):
+    ind = hash(key) mod M
+    while table[ind] != NULL
+        if table[ind] == key
+            return
+        ind = (ind + 1) mod M
+    table[ind] = key
+\end{cppcode}
+\begin{cppcode}
+DELETE(key):
+    ind = hash(key) mod M
+    while table[ind] != NULL
+        if table[ind] == key
+            table[ind] = ERASED
+            return
+        ind = (ind + 1) mod M
+\end{cppcode}
+\begin{cppcode}
+SEARCH(key):
+    ind = hash(key) mod M
+    while table[ind] != NULL
+        if table[ind] == key
+            return TRUE 
+        ind = (ind + 1) mod M
+    return FALSE
+\end{cppcode}
+
+БОО предположим, что функция hash для целочисленных типов реализована так же, как
+call operator в функторе std::hash стандартной библиотеки языка C++, т.е. для целочисленных типов
+их хэш равен их значению, проинтепретируемому как std::size\_t.
+
+\section*{Первый пример}
+
+Первым примером последовательности, для которой операции будут работать \textbf{\textit{долго}},
+может быть такая последовательность:
+
+INSERT(0)
+
+DELETE(0)
+
+INSERT(1)
+
+DELETE(1)
+
+INSERT(2)
+
+DELETE(2)
+
+\dots
+
+INSERT(n)
+
+DELETE(n)
+
+для некоторого $ n < M $
+
+Т.к. при удалении ключей они помечаются \textcolor{orange}{ERASED}, 
+и хэши по модулю M вставленных ключей 0, ..., n - 1 - это целые числа 
+от 0 до n - 1, то во время выполнения INSERT(n) и DELETE(n) массив table 
+будет заполнен значениям \textcolor{orange}{ERASED} во всех ячейках с 
+индексами 0, ..., n - 1, поэтому вставка и последующее удаление ключа 
+n произойдёт за линейное относительно размера таблицы время.
+
+Возможной доработкой для данного случая может быть изменение функции 
+INSERT - возможность вставки кдюча в ячейку, которая равна не только 
+\textcolor{orange}{NULL}, но и \textcolor{orange}{ERASED}
+
+\begin{cppcode}
+INSERT(key):
+    ind = hash(key) mod M
+    while table[ind] != NULL and table[ind] != ERASED
+        if table[ind] == key
+            return
+        ind = (ind + 1) mod M
+    table[ind] = key
+\end{cppcode}
+
+Эта небольшая доработка не испортит корректность структуры данных, т.к. 
+до доработки роль элементов, сохраняющих целостность кластера при удалении, 
+играли только \textcolor{orange}{ERASED}, а после неё на их место стали
+вставляться действительные ключи, которые также подходят для сохранения
+кластера, т.к. непосредственно являются его элементами.
+
+\section*{Второй пример}
+
+Вторым примером последовательности, операции над которой приведут к \textbf{\textit{долгой}} 
+работе (за линейное время относительно размера таблицы), может быть:
+
+INSERT(0)
+
+INSERT(M)
+
+INSERT(2 $\cdot$ M)
+
+INSERT(3 $\cdot$ M)
+
+INSERT(4 $\cdot$ M)
+
+\dots
+
+INSERT(n $\cdot$ M)
+
+SEARCH(n $\cdot$ M)
+
+DELETE(n $\cdot$ M)
+
+для некоторого $ n < M $
+
+На момент вызова операции INSERT(n$\cdot$ M), в хэщ-таблице будет $n$ элементов,
+при этом, т.к. у всех вставленных ключей хэш по модулю M равен 0, то они при вставке 
+последовательно вставлялись в массив table по индексам 0, 1, \dots, n - 1, поэтому 
+вставка ключа n $\cdot$ M займёт линейное время относительно размера таблицы 
+(мы переберём все индексы от 0 до n - 1, пока не найдём первое свободное место по индексу n)
+
+Аналогично, для операций SEARCH(n $\cdot$ M) и DELETE(n $\cdot$ M) время их выполнения 
+будет пропорционально размеру хэш-таблицы, т.е. поиск и удаление выполнятся за линейное 
+время относительно количества элементов в таблице.
+
+Для решения данной проблемы можно использовать квадратичное пробирование 
+и параллельный поиск свободных значений при помощи векторных инструкций
+как, например, в:
+
+\url{https://doc.rust-lang.org/std/collections/struct.HashMap.html}
+
+\includegraphics[scale=0.60]{img1.png}
+
+\includegraphics[scale=0.60]{img2.png}
+
+\end{document}
