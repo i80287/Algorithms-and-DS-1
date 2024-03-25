@@ -1,0 +1,414 @@
+\documentclass{report}
+
+\input{preamble}
+\input{macros}
+
+\begin{document}
+
+\chapter*{Задание A1}
+
+\section*{Алгоритм ALG\_1}
+
+\begin{equation*}
+\begin{split}
+    & \text{1. В данном задаче будем хранить графа в виде списка рёбер. Позже, при анализе, обоснуем этот выбор} \\
+    & \text{2. Для сортировки рёбер по весу необходимо $\Theta(|E| \log |E|)$ операций} \\
+    & \text{(в частном случае, если веса - ограниченное подмножество целых чисел фиксированного} \\
+    & \text{размера (в битах), можно применить radix-sort за $ \Theta(|E| + K) $)} \\
+    & \text{3. Внешний цикл будет выполняться за $\Theta(|E|)$, проверка на связность - обходом} \\
+    & \text{в глубину / ширину (dfs / bfs) (корректно, т.к. граф неориентированный) } \\
+    & \text{На каждой итерации обход делается за $\Theta(|V| + |E'|)$, где $E'$ - текущее количество рёбер в графе} \\
+    & \text{На каждой итерации в худшем случае $|E'| = |E|$, если ни одно ребро на предыдущих} \\ 
+    & \text{итерациях не удалялось} \\
+    & \text{Удаление ребра - за $\mathcal{O}(|E|)$, добавление ребра обратно - за $\mathcal{O}(1)$} \\
+    & \text{Таким образом, цикл работает за }
+        \mathcal{O}(|E| \left(|E| + \left(|E| + |V|\right) \right) )
+        = \mathcal{O}(|E| \left(|E| + |V|\right) ) \\
+    & \text{3. В данной задаче не важно - хранить граф в виде списка рёбер или списка смежности,} \\
+    & \text{т.к. на каждой итерации самая дорогая операция - обход за $ \mathcal{O}(|V| + |E|) $.} \\
+    & \text{Если хранить граф в виде матрицы смежности/сопряжённости, то операции удаления станут} \\
+    & \text{работать за $\mathcal{O}(1)$, но обход станет работать за $ \mathcal{O}(|V|^2)$, что не лучше изначальной асимптотики.} \\
+    & \text{4. Тогда весь алгоритм работает за }
+          \mathcal{O} \left( |E| \cdot \left(|E| + |V|\right) + |E| \log |E| \right)
+        = \mathcal{O} \left( |E| \cdot \left(|E| + |V|\right) \right) \\
+\end{split}
+\end{equation*}
+
+\section*{Алгоритм ALG\_2}
+
+\begin{equation*}
+\begin{split}
+    & \text{1. В данном задаче будем хранить графа в виде списка рёбер. Позже, при анализе, обоснуем этот выбор} \\
+    & \text{2. Случайную последовательность ребёр графа $G = (V, E)$ можно сгенерировать за $\Theta(|E|)$,} \\
+    & \text{сгенерировав последовательность индексов от 0 до $|E| - 1$ за $\Theta(|E|)$ и перемешав её} \\
+    & \text{при помощи std::shuffle за $\Theta(|E|)$. Тогда рёбра можно будет выбирать по индексам в списке рёбер.} \\
+    & \text{3. Внешний цикл выполняется за $\Theta(|E|)$} \\
+    & \text{Проверка на наличие циклов в неориентированном графе - dfs за $\mathcal{O}(|V| + |E|)$} \\
+    & \text{Добавление ребра делается за $\mathcal{O}(1)$, удаление ребра - за $\mathcal{O}(|E|)$} \\
+    & \text{Аналогично рассуждениям в предыдущей задаче, хранение графа в виде матрицы} \\
+    & \text{смежности/сопряжённости не улучшит асимптотику самой дорогой операции в цикле, но может} \\
+    & \text{ухудшить её (например, если $ |E| = \mathcal{O}(|V|) $).} \\
+    & \text{4. Тогда весь алгоритм работает за }
+        = \mathcal{O} \left( |E| + |E| \cdot \left(|E| + |V|\right) \right)
+        = \mathcal{O} \left( |E| \cdot \left(|E| + |V|\right) \right) \\
+\end{split}
+\end{equation*}
+
+\section*{Алгоритм ALG\_3}
+
+\begin{equation*}
+\begin{split}
+    & \text{1. В данном задаче будем хранить графа в виде списка рёбер. Позже, при анализе, обоснуем этот выбор} \\
+    & \text{2. Добавление ребра делается за $\mathcal{O}(1)$, удаление ребра - за $\mathcal{O}(|E|)$} \\
+    & \text{3. Случайную последовательность ребёр графа $G = (V, E)$ можно сгенерировать за $\Theta(|E|)$,} \\
+    & \text{сгенерировав последовательность индексов от 0 до $|E| - 1$ за $\Theta(|E|)$ и перемешав её} \\
+    & \text{при помощи std::shuffle за $\Theta(|E|)$. Тогда рёбра можно будет выбирать по индексам в списке рёбер.} \\
+    & \text{3. Внешний цикл выполняется за $\Theta(|E|)$} \\
+    & \text{Поиск цикла в неориентированном графе - dfs за $\mathcal{O}(|V| + |E|)$} \\
+    & \text{Поиск ребра с максимальным весом в найденном цикле - за $ \mathcal{O}(V) $,} \\
+    & \text{т.к. \# рёбер в цикле $ = \left( \text{\# вершин в цикле} - 1 \right) < |V| $ } \\
+    & \text{Аналогично рассуждениям в предыдущей задаче, хранение графа в виде матрицы} \\
+    & \text{смежности/сопряжённости не улучшит асимптотику самой дорогой операции в цикле, но может} \\
+    & \text{ухудшить её (например, если $ |E| = \mathcal{O}(|V|) $).} \\
+    & \text{4. Тогда весь алгоритм работает за }
+        = \mathcal{O} \left( |E| + |E| \cdot \left( \left(|E| + |V|\right) + |E| + |E| \right) \right)
+        = \mathcal{O} \left( |E| \cdot \left(|E| + |V|\right) \right) \\
+\end{split}
+\end{equation*}
+
+Исходный код приведён в файле \textit{a1.cpp}
+
+\pagebreak
+
+\section*{Корректность алгоритмов}
+
+Приведём контрпример, показывающий, что алгоритм ALG\_1 не строит mst:
+
+\includegraphics[scale=0.7]{a1_alg1_annotated.png}
+
+\pagebreak
+
+Приведём контрпример, показывающий, что алгоритм ALG\_2 не строит mst:
+
+\includegraphics[scale=0.7]{a1_alg2_annotated.png}
+
+\pagebreak
+
+Приведём контр пример работы алгоритма ALG\_3 (построение mst):
+
+\includegraphics[scale=0.7]{a1_alg3_annotated.png}
+
+\pagebreak
+
+\mclemma{Лемма 1 об алгоритме ALG\_3}{
+    Алгоритм ALG\_3 строит остовное дерево данного графа $ G = (V, E) $
+\mcprf{
+\begin{split}
+    & \text{1. Здесь и далее будем обозначать черeз T граф, который построен на рёбрах,} \\
+    & \text{которые получил алгоритм ALG\_3 после окончания работы.} \\
+    & \text{2. До начала итераций цикла T - пустое множество, далее, на первых двух итерациях} \\
+    & \text{(или одной, если $|E| = 1$) в T добавляются 2 ребра, цикл образоваться не может} \\
+    & \text{3. На каждой итерации из графа T удаляется ребро $e_{max}$ после добавления} \\
+    & \text{некоторого ребра $e$ тогда и только тогда, когда после добавления} \\
+    & \text{ребра $e$ образовался цикл $c$, и при этом $e_{max} \in c$.} \\
+    & \text{Пусть в T есть цикл. Тогда, на какой-то итерации алгоритма образовалось сразу хотя бы 2 цикла} \\
+    & \text{(если на каждой итерации образовывается не более 1 цикла, то они сразу удаляются)} \\
+    & \text{Рассмотрим первую среди таких итераций, на которой образовалось сразу 2 цикла.} \\
+    & \text{Пусть на этой итерации было добавлено ребро $e = \{u, v\}$, тогда до добавления ребра} \\
+    & \text{в графе не было циклов} \\
+    & \text{(иначе, это не первая итерация, на которой появилось сразу хотя бы 2 цикла)} \\
+    & \text{Т.к. на данной итерации появилось сразу хотя 2 цикла, то между вершинами} \\
+    & \text{$u$ и $v$ было хотя бы 2 различных пути:} \\
+    & \text{если между ними не было пути, то не образовался бы ни один цикл, а если был только один} \\
+    & \text{путь, то образовался бы 1 цикл} \\
+    & \text{Но раз между ними уже было хотя бы 2 различных пути, то в графе уже был цикл, что неверно,} \\
+    & \text{т.е. пришли к противоречию, предположив, что в T есть цикл.} \\
+    & \text{4. Т.к. в T рёбра удаляются только из циклов и только по-одному ребру, то граф связен} \\
+    & \text{При этом, каждое ребро исходного графа добавлялось в T, тогда множество вершин графа T} \\
+    & \text{совпадает с множеством вершин графа G (рёбра удаляются, только если они в цикле)} \\
+    & \text{5. Доказали, что T - связный граф без циклов $\implies$ T - дерево.} \\
+    & \text{Тогда $T = (V, E_T) \implies $ T - остовное дерево графа G.} \\
+\end{split}
+}
+}
+
+\mclemmaBreakable{Лемма 2 об алгоритме ALG\_3}{
+    Алгоритм ALG\_3 строит минимальное остовное дерево данного графа $ G = (V, E) $
+\begin{proof}
+\begin{align*}
+    & \text{1. По лемме 1 ALG\_3 построил некоторое остовное дерево $T = (V, E_T)$ графа G.} \\
+    & \text{В данной лемме через "$mst$" будем обозначать фразу "минимальное остовное дерево"} \\
+    & \text{Рассмотрим некоторые крайние случаи:} \\
+    & \text{$ |V| = 0 \implies E_T = \varnothing \implies T - mst$ графа G} \\
+    & \text{$ |V| = 1 \implies E_T = \varnothing \implies T - mst$ графа G} \\
+    & \text{$ |V| = 2 \implies V = \{u, v\} \implies E_T = \{ \{u, v\} \} \implies T - mst$ графа G} \\
+    & \text{Показали, что при $|V| \le 2$ лемма верна. Пусть $|V| > 2 \implies |V| \ge 3$} \\
+    & \text{3. Граф G связен $ \implies \exists $ хотя бы одно $mst$ графа G.} \\
+    & \text{Возмём произвольное $mst$ графа G, обозначив его как $T'$, и покажем, что при} \\
+    & \text{помощи преобразований над рёбрами графа $T'$, которые сохраняют его свойство быть} \\
+    & \text{минимальным остовным деревом графа G, из $T'$ можно получить T.} \\
+    & \text{4. Если $T = T'$, то лемма доказана. Пусть $T \ne T'$.} \\
+    & \text{T и $T'$ - остовные деревья графа G $ \implies |E_T| = |E_{T'}| = |V| - 1 \ge 2 $ } \\
+    & T = (V, E_T) \wedge T' = (V, E_{T'}) \wedge T \ne T'
+        \implies E_T \ne E_{T'} \\
+    & E_T \ne E_{T'} \wedge |E_T| \ge 2 \wedge |E_{T'}| \ge 2
+        \implies \exists (u, v) \in V^2: \{u, v\} \in E_{T} \wedge \{u, v\} \notin E_{T'} \\
+    & \text{$T'$ - связный граф $\implies$ в графе $T'$ есть путь из вершину $u$ в вершину $v$.} \\
+    & \text{Обозначим вершины этого пути как $ u, p_1, p_2, ..., p_k, v $ (быть может, k = 1)} \\
+    & \text{На картинке это можно изобразить так:} \\
+    & \begin{tikzpicture}
+        \node[draw,align=left] at (0, 1) {В графе T:};
+        \coordinate (u_T) at (0, 0);
+        \coordinate (v_T) at (0, -2);
+        \filldraw[black] (u_T) circle (1pt) node[anchor=south]{u};
+        \filldraw[black] (v_T) circle (1pt) node[anchor=east]{v};
+        \draw (u_T) -- (v_T);
+        \node[draw,align=left] at (3.25, 1) {В графе $T'$:};
+        \coordinate (u_TP) at (3, 0);
+        \coordinate (v_TP) at (3, -2);
+        \coordinate (p_1_TP) at (4, -0.2);
+        \coordinate (p_k_TP) at (4, -1.8);
+        \coordinate (MISSINGSENTINEL_1_TP) at (4.5, -0.6);
+        \coordinate (MISSINGSENTINEL_2_TP) at (4.5, -1.4);
+        \filldraw[black] (u_TP) circle (1pt) node[anchor=south]{u};
+        \filldraw[black] (v_TP) circle (1pt) node[anchor=east]{v};
+        \filldraw[black] (p_1_TP) circle (1pt) node[anchor=south]{$p_1$};
+        \filldraw[black] (p_k_TP) circle (1pt) node[anchor=north]{$p_k$};
+        \draw (u_TP) -- (p_1_TP);
+        \draw[densely dotted] (p_1_TP) -- (MISSINGSENTINEL_1_TP);
+        \draw[densely dotted] (MISSINGSENTINEL_2_TP) -- (p_k_TP);
+        \draw (p_k_TP) -- (v_TP);
+        \node [align=flush center,text width=8cm] at (1.2, -2.8) { Figure 1 };
+    \end{tikzpicture} \\
+    & \text{При этом, вершины } p_1, p_2, ..., p_k \in \text{ графу $T'$ }
+        \implies \{ p_1, p_2, ..., p_k \} \subseteq V
+        \implies \\
+    & \implies \text{ эти вершины есть и в графе T (т.к. T - остовное дерево графа G)} \\
+    & \text{5. Любое ребро из $E_T$ и $E_{T'}$ есть в $E \implies $ в исходном графе G есть цикл $(u, p_1, ..., p_k, v, u)$ } \\
+\end{align*}
+\newline
+\begin{align*}
+    & \text{\rom{1}. Если в графе T нет ребра $\{ v, p_k \}$, тогда:} \\
+    &  \begin{tikzpicture}
+        \node[draw,align=left] at (0, 1) {В графе T:};
+        \coordinate (u_T) at (0, 0);
+        \coordinate (v_T) at (0, -2);
+        \coordinate (p_k_T) at (1, -1.8);
+        \filldraw[black] (u_T) circle (1pt) node[anchor=south]{u};
+        \filldraw[black] (v_T) circle (1pt) node[anchor=east]{v};
+        \filldraw[black] (p_k_T) circle (1pt) node[anchor=north]{$p_k$};
+        \draw (u_T) -- (v_T);
+        \node[draw,align=left] at (3.25, 1) {В графе $T'$:};
+        \coordinate (u_TP) at (3, 0);
+        \coordinate (v_TP) at (3, -2);
+        \coordinate (p_1_TP) at (4, -0.2);
+        \coordinate (p_k_TP) at (4, -1.8);
+        \coordinate (MISSINGSENTINEL_1_TP) at (4.5, -0.6);
+        \coordinate (MISSINGSENTINEL_2_TP) at (4.5, -1.4);
+        \filldraw[black] (u_TP) circle (1pt) node[anchor=south]{u};
+        \filldraw[black] (v_TP) circle (1pt) node[anchor=east]{v};
+        \filldraw[black] (p_1_TP) circle (1pt) node[anchor=south]{$p_1$};
+        \filldraw[black] (p_k_TP) circle (1pt) node[anchor=north]{$p_k$};
+        \draw (u_TP) -- (p_1_TP);
+        \draw[densely dotted] (p_1_TP) -- (MISSINGSENTINEL_1_TP);
+        \draw[densely dotted] (MISSINGSENTINEL_2_TP) -- (p_k_TP);
+        \draw (p_k_TP) -- (v_TP);
+        \node [align=flush center,text width=8cm] at (1.2, -2.8) { Figure 2 };
+    \end{tikzpicture} \\
+    & \text{\rom{1}.1 Ребра $ \{v, p_k\} $ нет в T $ \implies $ оно было удалено во время работы алгоритма.} \\
+    & \text{Оба ребра $ \{u, v\} $ и $ \{v, p_k\} $ есть в графе G и принадлежат одному циклу, поэтому} \\
+    & \text{алгоритм мог удалить любое из них, не нарушив связность T.} \\
+    & \text{Из того, что алгоритм удалил $ \{v, p_k\} $, следует, что $ w(v, p_k) \ge w(u, v) $} \\
+    & \text{Это верно, т.к. если $ \{v, p_k\} $ удалил из-за образования цикла после вставки $ \{u, v\}$, }\\
+    & \text{то } w(v, p_k) \ge w(u, v) \\
+    & \text{А если $ \{v, p_k\} $ удалили из-за другого цикла $c$, когда в графе ещё не было $\{u, v\}$, } \\
+    & \text{то $w(v, p_k) \ge $ максимального веса рёбер в цикле $c$, из-за которого его удалили, но это цикл $c$ точно} \\
+    & \text{проходил через вершины $ \{v, p_k\} \implies $ из-за того, что в G есть цикл $(u, p_1, ..., p_k, v, u)$, } \\
+    & \text{ребро $\{u, v\}$ также попадало в цикл с рёбрами из $c$, но осталось в графе $\implies$} \\
+    & \text{$\implies$ его вес не больше максимального веса рёбер в $c \implies w(u, v) \le w(v, p_k)$} \\
+    & \text{\rom{1}.2 Если $ w(u, v) < w(v, p_k) $, то в $T'$ можно удалить ребро $ \{v, p_k\} $ и добавить ребро $ \{u, v\} $} \\
+    & \text{Множество вершин графа $T'$ при этом не изменится, граф останется связным и в нём } \\
+    & \text{не появится цикл, т.е. граф останется остовным деревом графа G.} \\
+    & \text{Но при этом его (графа $T'$) вес уменьшится, что противоречит тому, что $T' - mst \implies \bot \implies$} \\
+    & \text{$\implies$ предположение, что $ w(u, v) < w(v, p_k) $, неверено $ \implies w(u, v) = w(v, p_k) $} \\
+    & \text{\rom{1}.3 Тогда построим граф $T''$ так: уберём из $E_{T'}$ ребро $ \{v, p_k\} $ и добавим ребро $ \{u, v\} $, т.е.} \\
+    & E_{T''} := \left( E_{T'} \setminus \{ \{v, p_k\} \} \right) \cup \{ \{u, v\}  \} \text{} \\
+    & \text{В графе $T''$ не появится цикл, он останется связным, и его вес не изменится, т.е. останется} \\
+    & \text{равным весу графа $T' \implies T'' - mst$ графа G.} \\
+    & \text{И при этом его множество рёбер $E_{T''}$ станет на 1 ребро "ближе" к множеству вершин $E_T$} \\
+    & \text{Формально, } |E_{T} \cap E_{T''}| = |E_{T} \cap E_{T'}| + 1 \\
+    & \text{На картинке это можно изобразить так:} \\
+    &  \begin{tikzpicture}
+        \node[draw,align=left] at (0, 1) {В графе T:};
+        \coordinate (u_T) at (0, 0);
+        \coordinate (v_T) at (0, -2);
+        \coordinate (p_k_T) at (1, -1.8);
+        \filldraw[black] (u_T) circle (1pt) node[anchor=south]{u};
+        \filldraw[black] (v_T) circle (1pt) node[anchor=east]{v};
+        \filldraw[black] (p_k_T) circle (1pt) node[anchor=north]{$p_k$};
+        \draw (u_T) -- (v_T);
+        \node[draw,align=left] at (3.25, 1) {В графе $T''$:};
+        \coordinate (u_TS) at (3, 0);
+        \coordinate (v_TS) at (3, -2);
+        \coordinate (p_1_TS) at (4, -0.2);
+        \coordinate (p_k_TS) at (4, -1.8);
+        \coordinate (MISSINGSENTINEL_1_TS) at (4.5, -0.6);
+        \coordinate (MISSINGSENTINEL_2_TS) at (4.5, -1.4);
+        \filldraw[black] (u_TS) circle (1pt) node[anchor=south]{u};
+        \filldraw[black] (v_TS) circle (1pt) node[anchor=east]{v};
+        \filldraw[black] (p_1_TS) circle (1pt) node[anchor=south]{$p_1$};
+        \filldraw[black] (p_k_TS) circle (1pt) node[anchor=north]{$p_k$};
+        \draw (u_TS) -- (p_1_TS);
+        \draw[densely dotted] (p_1_TS) -- (MISSINGSENTINEL_1_TS);
+        \draw[densely dotted] (MISSINGSENTINEL_2_TS) -- (p_k_TS);
+        \draw (u_TS) -- (v_TS);
+        \node [align=flush center,text width=8cm] at (1.2, -2.8) { Figure 3 };
+    \end{tikzpicture} \\
+\end{align*}
+\newline
+\begin{align*}
+    & \text{\rom{2}. Если в графе T есть ребро $\{ v, p_k \}$, тогда:} \\
+    & \begin{tikzpicture}
+        \node[draw,align=left] at (0, 1) {В графе T:};
+        \coordinate (u_T) at (0, 0);
+        \coordinate (v_T) at (0, -2);
+        \coordinate (p_k_T) at (1, -1.8);
+        \filldraw[black] (u_T) circle (1pt) node[anchor=south]{u};
+        \filldraw[black] (v_T) circle (1pt) node[anchor=east]{v};
+        \filldraw[black] (p_k_T) circle (1pt) node[anchor=north]{$p_k$};
+        \draw (u_T) -- (v_T);
+        \draw (p_k_T) -- (v_T);
+        \node[draw,align=left] at (3.25, 1) {В графе $T'$:};
+        \coordinate (u_TP) at (3, 0);
+        \coordinate (v_TP) at (3, -2);
+        \coordinate (p_1_TP) at (4, -0.2);
+        \coordinate (p_k_TP) at (4, -1.8);
+        \coordinate (MISSINGSENTINEL_1_TP) at (4.5, -0.6);
+        \coordinate (MISSINGSENTINEL_2_TP) at (4.5, -1.4);
+        \filldraw[black] (u_TP) circle (1pt) node[anchor=south]{u};
+        \filldraw[black] (v_TP) circle (1pt) node[anchor=east]{v};
+        \filldraw[black] (p_1_TP) circle (1pt) node[anchor=south]{$p_1$};
+        \filldraw[black] (p_k_TP) circle (1pt) node[anchor=north]{$p_k$};
+        \draw (u_TP) -- (p_1_TP);
+        \draw[densely dotted] (p_1_TP) -- (MISSINGSENTINEL_1_TP);
+        \draw[densely dotted] (MISSINGSENTINEL_2_TP) -- (p_k_TP);
+        \draw (p_k_TP) -- (v_TP);
+        \node [align=flush center,text width=8cm] at (1.2, -2.8) { Figure 4 };
+    \end{tikzpicture} \\
+    & \text{\rom{2}.1. Рассмотрим рёбра $\{ u, p_1 \}, ... , \{ p_k, v \}$ графа $T'$ (это множество не пусто, т.к. $k \ge 1$)} \\
+    & \text{Если они все $ \in E_T $, то в $T$ есть цикл $(u, p_1, ..., p_k, v, u) \implies $ T - не дерево $ \implies \bot $} \\
+    & \text{Пусть ребра $ \{p_i, p_{i+1}\} $ (здесь $0 \le i \le k - 1, p_0 := u$) нет в графе T } \\
+    & \text{На картинке это можно изобразить так:} \\
+    & \begin{tikzpicture}
+        \node[draw,align=left] at (0, 1) {В графе T:};
+        \coordinate (u_T) at (0, 0);
+        \coordinate (v_T) at (0, -2);
+        \coordinate (p_k_T) at (1, -1.8);
+        \coordinate (p_i_T) at (1.5, -0.6);
+        \coordinate (p_i_1_T) at (1.5, -1);
+        \filldraw[black] (u_T) circle (1pt) node[anchor=south]{u};
+        \filldraw[black] (v_T) circle (1pt) node[anchor=east]{v};
+        \filldraw[black] (p_k_T) circle (1pt) node[anchor=north]{$p_k$};
+        \filldraw[black] (p_i_T) circle (1pt) node[anchor=south]{$p_i$};
+        \filldraw[black] (p_i_1_T) circle (1pt) node[anchor=north]{$p_{i + 1}$};
+        \draw (u_T) -- (v_T);
+        \draw (p_k_T) -- (v_T);
+        \node[draw,align=left] at (3.25, 1) {В графе $T'$:};
+        \coordinate (u_TP) at (3, 0);
+        \coordinate (v_TP) at (3, -2);
+        \coordinate (p_1_TP) at (4, -0.2);
+        \coordinate (p_k_TP) at (4, -1.8);
+        \coordinate (MISSINGSENTINEL_1_TP) at (4.5, -0.4);
+        \coordinate (MISSINGSENTINEL_2_TP) at (4.5, -1.6);
+        \coordinate (MISSINGSENTINEL_3_TP) at (5, -0.6);
+        \coordinate (MISSINGSENTINEL_4_TP) at (5, -1.4);
+        \coordinate (p_i_TP) at (5.5, -0.8);
+        \coordinate (p_i_1_TP) at (5.5, -1.2);
+        \filldraw[black] (u_TP) circle (1pt) node[anchor=south]{u};
+        \filldraw[black] (v_TP) circle (1pt) node[anchor=east]{v};
+        \filldraw[black] (p_1_TP) circle (1pt) node[anchor=south]{$p_1$};
+        \filldraw[black] (p_k_TP) circle (1pt) node[anchor=north]{$p_k$};
+        \filldraw[black] (p_i_TP) circle (1pt) node[anchor=south]{$p_i$};
+        \filldraw[black] (p_i_1_TP) circle (1pt) node[anchor=north]{$p_{i + 1}$};
+        \draw (u_TP) -- (p_1_TP);
+        \draw[densely dotted] (p_1_TP) -- (MISSINGSENTINEL_1_TP);
+        \draw[densely dotted] (MISSINGSENTINEL_3_TP) -- (p_i_TP);
+        \draw[densely dotted] (p_i_1_TP) -- (MISSINGSENTINEL_4_TP);
+        \draw[densely dotted] (MISSINGSENTINEL_2_TP) -- (p_k_TP);
+        \draw (p_k_TP) -- (v_TP);
+        \draw (p_i_TP) -- (p_i_1_TP);
+        \node [align=flush center,text width=8cm] at (1.2, -2.8) { Figure 5 };
+    \end{tikzpicture} \\
+    & \text{\rom{2}.2 Ребра $ \{p_i, p_{i+1}\} $ нет в T $ \implies $ оно было удалено во время работы алгоритма.} \\
+    & \text{По аналогии с пунктом \rom{1}.1 $ w(p_i, p_{i + 1}) \ge w(u, v) $} \\
+    & \text{\rom{2}.3 Если $ w(u, v) < w(p_i, p_{i + 1}) $, то в $T'$ можно удалить ребро $ \{p_i, p_{i+1}\} $ и добавить ребро $ \{u, v\} $} \\
+    & \text{Множество вершин графа $T'$ при этом не изменится, граф останется связным и в нём } \\
+    & \text{не появится цикл, т.е. граф останется остовным деревом графа G.} \\
+    & \text{Но при этом его (графа $T'$) вес уменьшится, что противоречит тому, что $T' - mst \implies \bot \implies$} \\
+    & \text{$\implies$ предположение, что $ w(u, v) < w(p_i, p_{i + 1}) $, неверено $ \implies w(u, v) = w(p_i, p_{i + 1}) $} \\
+    & \text{\rom{2}.4 Тогда построим граф $T''$ так: уберём из $E_{T'}$ ребро $ \{p_i, p_{i+1}\} $ и добавим ребро $ \{u, v\} $, т.е.} \\
+    & E_{T''} = \left( E_{T'} \setminus \{ \{p_i, p_{i+1}\} \} \right) \cup \{ \{u, v\}  \} \text{} \\
+    & \text{В графе $T''$ не появится цикл, он останется связным, и его вес не изменится, т.е. $T'' - mst$ графа G.} \\
+    & \text{И при этом его множество рёбер $E_{T''}$ станет на 1 ребро "ближе" к множеству рёбер $E_T$} \\
+    & \text{Формально, } |E_{T} \cap E_{T''}| = |E_{T} \cap E_{T'}| + 1 \\
+\end{align*}
+\newline
+\begin{align*}
+    & \text{На картинке это можно изобразить так:} \\
+    & \begin{tikzpicture}
+        \node[draw,align=left] at (0, 1) {В графе T:};
+        \coordinate (u_T) at (0, 0);
+        \coordinate (v_T) at (0, -2);
+        \coordinate (p_k_T) at (1, -1.8);
+        \coordinate (p_i_T) at (1.5, -0.6);
+        \coordinate (p_i_1_T) at (1.5, -1);
+        \filldraw[black] (u_T) circle (1pt) node[anchor=south]{u};
+        \filldraw[black] (v_T) circle (1pt) node[anchor=east]{v};
+        \filldraw[black] (p_k_T) circle (1pt) node[anchor=north]{$p_k$};
+        \filldraw[black] (p_i_T) circle (1pt) node[anchor=south]{$p_i$};
+        \filldraw[black] (p_i_1_T) circle (1pt) node[anchor=north]{$p_{i + 1}$};
+        \draw (u_T) -- (v_T);
+        \draw (p_k_T) -- (v_T);
+        \node[draw,align=left] at (3.25, 1) {В графе $T''$:};
+        \coordinate (u_TS) at (3, 0);
+        \coordinate (v_TS) at (3, -2);
+        \coordinate (p_1_TS) at (4, -0.2);
+        \coordinate (p_k_TS) at (4, -1.8);
+        \coordinate (MISSINGSENTINEL_1_TS) at (4.5, -0.4);
+        \coordinate (MISSINGSENTINEL_2_TS) at (4.5, -1.6);
+        \coordinate (MISSINGSENTINEL_3_TS) at (5, -0.6);
+        \coordinate (MISSINGSENTINEL_4_TS) at (5, -1.4);
+        \coordinate (p_i_TS) at (5.5, -0.8);
+        \coordinate (p_i_1_TS) at (5.5, -1.2);
+        \filldraw[black] (u_TS) circle (1pt) node[anchor=south]{u};
+        \filldraw[black] (v_TS) circle (1pt) node[anchor=east]{v};
+        \filldraw[black] (p_1_TS) circle (1pt) node[anchor=south]{$p_1$};
+        \filldraw[black] (p_k_TS) circle (1pt) node[anchor=north]{$p_k$};
+        \filldraw[black] (p_i_TS) circle (1pt) node[anchor=south]{$p_i$};
+        \filldraw[black] (p_i_1_TS) circle (1pt) node[anchor=north]{$p_{i + 1}$};
+        \draw (u_TS) -- (p_1_TS);
+        \draw[densely dotted] (p_1_TS) -- (MISSINGSENTINEL_1_TS);
+        \draw[densely dotted] (MISSINGSENTINEL_3_TS) -- (p_i_TS);
+        \draw[densely dotted] (p_i_1_TS) -- (MISSINGSENTINEL_4_TS);
+        \draw[densely dotted] (MISSINGSENTINEL_2_TS) -- (p_k_TS);
+        \draw (p_k_TS) -- (v_TS);
+        \draw (u_TS) -- (v_TS);
+        \node [align=flush center,text width=8cm] at (1.2, -2.8) { Figure 6 };
+    \end{tikzpicture} \\
+    & \text{6. Таким образом, привели пример итерационного алгоритма, который на каждой итерации} \\
+    & \text{преобразует $mst T^{j}$ в $mst T^{j + 1}$ путём удаления одного ребра из $E_{T^j}$ и добавления} \\
+    & \text{одного ребра из $E_T$, которого ранее не было в $E_{T^j}$, так, что множества вершин графов $T^j$ и $T^{j + 1}$} \\
+    & \text{совпадают и равны $V$, и при этом выполняется равенство $ |E_T \cap E_{T^{j + 1}} | = |E_T \cap E_{T^{j}} | + 1 $ } \\
+    & \forall j: | E_{T^j} | = |V| - 1 \implies \forall j: |E_T \cap E_{T^{j}} | \le |V| - 1 \\
+    & \text{Тогда через конечное число итераций алгоритма получим $mst T^l$, такое что: } |E_T \cap E_{T^{l}} | = |V| - 1 \\
+    & \left(|E_T| = |V| - 1\right)
+        \wedge \left(|E_{T^l}| = |V| - 1\right)
+        \wedge \left(|E_T \cap E_{T^{l}} | = |V| - 1\right)
+        \implies E_T = E_{T^l} \\
+    & \text{У графов $T$ и $T^l$ множества вершин совпадают $\implies T = T^l$} \\
+    & \text{Таким образом, через конечное число итераций получим $mst T^l$, равное T $ \implies T - mst$ графа G} \\
+\end{align*}
+\end{proof}
+}
+
+\end{document}

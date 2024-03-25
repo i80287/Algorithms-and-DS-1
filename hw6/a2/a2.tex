@@ -1,0 +1,773 @@
+\documentclass{report}
+
+\input{preamble}
+\usepackage{ragged2e}
+\usepackage{blindtext}
+\usepackage{booktabs}
+\input{macros}
+
+\begin{document}
+
+\chapter*{Задание A2}
+
+\section*{Пункт 1.}
+
+\raggedright
+В классическом алгоритме Дейкстры на каждом шаге у вершины $v$, до которой сейчас найден ближайший путь, просматриваем
+всех соседей $u$ и обновляем расстояния до них как $dist[u] = \min(dist[u], dist[v] + w(v, u))$.
+
+Пользуясь тем, что уже существует доказательство корректности алгоритма Дейкстры, заметим, что в нём используется то,
+что веса рёбер неотрицательные и прибавление $w(v, u)$ к $dist[v]$ может уменьшить $dist[u]$, но не сделает его меньше $dist[v]$.
+
+Таким образом, при модификации алгоритма достаточно заменить операцию сложения на умножение и при инициализации расстояние
+до стартовой вершины сделать равным 1, а не 0, тогда алгоритм будет работать корректно, если веса всех рёбер неотрицательны.
+
+Если в графе есть ребро $(u, v)$ с отрицательным весом, то до вершины $u$ можно дойти по очень длинному пути, а потом пройти по ребру $(u, v)$,
+дойдя до вершины $v$ по пути с большим отрицательным весом
+\par
+
+Рассмотрим пример: пусть в ориентированном графе $G = (V, E)$ необходимо найти кратчайший путь из $v_1$ в $v_8$
+
+$\begin{tikzpicture}
+    \node[draw,align=left] at (0, 1) {Граф G:};
+    \coordinate (v1) at (0, -1);
+    \coordinate (v2) at (1, 0);
+    \coordinate (v3) at (1, -2);
+    \coordinate (v4) at (3, -2);
+    \coordinate (v5) at (2, 0);
+    \coordinate (v6) at (2.75, -0.5);
+    \coordinate (v7) at (3.75, -1);
+    \coordinate (v8) at (5.5, -0.25);
+    \coordinate (v9) at (2, -3);
+    \filldraw[black] (v1) circle (1pt) node[anchor=east]{$v_1$};
+    \filldraw[black] (v2) circle (1pt) node[anchor=south]{$v_2$};
+    \filldraw[black] (v3) circle (1pt) node[anchor=north]{$v_3$};
+    \filldraw[black] (v4) circle (1pt) node[anchor=north west]{$v_4$};
+    \filldraw[black] (v5) circle (1pt) node[anchor=south]{$v_5$};
+    \filldraw[black] (v6) circle (1pt) node[anchor=south]{$v_6$};
+    \filldraw[black] (v7) circle (1pt) node[anchor=south]{$v_7$};
+    \filldraw[black] (v8) circle (1pt) node[anchor=west]{$v_8$};
+    \filldraw[black] (v9) circle (1pt) node[anchor=north]{$v_9$};
+    \draw[-stealth,line width=0.4mm] (v1) -- node[anchor=south]{2} (v2);
+    \draw[-stealth,line width=0.4mm] (v1) -- node[anchor=west]{3} (v3);
+    \draw[-stealth,line width=0.4mm] (v3) -- node[anchor=north]{7} (v4);
+    \draw[-stealth,line width=0.4mm] (v2) -- node[anchor=south]{3} (v5);
+    \draw[-stealth,line width=0.4mm] (v2) -- node[anchor=north east]{2} (v4);
+    \draw[-stealth,line width=0.4mm] (v5) -- node[anchor=north east]{2} (v6);
+    \draw[-stealth,line width=0.4mm] (v6) -- node[anchor=west]{5} (v4);
+    \draw[-stealth,line width=0.4mm] (v6) -- node[anchor=south]{2} (v7);
+    \draw[-stealth,line width=0.4mm] (v4) -- node[anchor=north]{7} (v8);
+    \draw[-stealth,line width=0.4mm] (v5) -- node[anchor=south]{5} (v8);
+    \draw[-stealth,line width=0.4mm] (v7) -- node[anchor=south east]{1} (v8);
+    \draw[-stealth,line width=0.4mm] (v3) -- node[anchor=north east]{3} (v9);
+    \draw[-stealth,line width=0.4mm] (v9) -- node[anchor=north west]{2} (v4);
+\end{tikzpicture} $
+
+\begin{align*}
+    & \text{Изначально } dist = [ 1, +\infty, +\infty, +\infty, +\infty, +\infty, +\infty, +\infty, +\infty ] \\
+    & \text{После посещения } v_1: dist = [ 1, 2, 3, +\infty, +\infty, +\infty, +\infty, +\infty, +\infty, ] \\
+    & \text{После посещения } v_2: dist = [ 1, 2, 3, 4, 6, +\infty, +\infty, +\infty, +\infty, ] \\
+    & \text{После посещения } v_3: dist = [ 1, 2, 3, 4, 6, +\infty, +\infty, +\infty, 9, ] \\
+    & \text{После посещения } v_4: dist = [ 1, 2, 3, 4, 6, +\infty, +\infty, 28, 9, ] \\
+    & \text{После посещения } v_5: dist = [ 1, 2, 3, 4, 6, 12, +\infty, 28, 9, ] \\
+    & \text{После посещения } v_9: dist = [ 1, 2, 3, 4, 6, 12, +\infty, 28, 9, ] \\
+    & \text{После посещения } v_6: dist = [ 1, 2, 3, 4, 6, 12, 24, 28, 9, ] \\
+    & \text{После посещения } v_7: dist = [ 1, 2, 3, 4, 6, 12, 24, 24, 9, ] \\
+    & \text{После посещения } v_8: dist = [ 1, 2, 3, 4, 6, 12, 24, 24, 9, ] \\
+    & \text{Минимальный путь из $v_1$ в $v_8$ - путь } (v_1, v_2, v_5, v_6, v_7, v_8) \text{, вес которого равен 24} \\
+\end{align*}
+
+\section*{Пункт 2.}
+
+\raggedright
+Пусть, если вершина $v_j$ не достижима из вершины $v_i$ $\implies$ между ними нет кратчайшего пути, то положим $dist[v_i][v_j] = \infty$
+
+1. Сначала для всех пар $1 \le i, j, k \le n$, для которых $ i \ne j \ne k \ne i $ необходимо проверить выполнение неравенства треугольника:
+
+\[
+    \left( dist[v_i][v_j] \ne \infty \wedge dist[v_j][v_k] \ne \infty \right)
+    \implies
+    \left( dist[v_i][v_k] \ne \infty \wedge dist[v_i][v_j] + dist[v_j][v_k] \ge dist[v_i][v_k] \right)
+(1) \]
+
+Если оно не выполняется, то приходим к противоречию с определением кратчайшего пути $ \implies $ по такой матрице $dist[][]$
+нельзя восстановить граф.
+
+2. При выполнении неравенства рассмотрим такой алгоритм:
+
+В качестве матрицы весов $w$ восстанавливаемого графа положим данную матрицу $dist[][]$ кратчайших путей
+
+А в качестве восстанавливаемого графа $G$ рассмотрим список смежности, построенный из этой матрицы
+(вершина $u$ принадлежит списку вершины $v$, если $dist[u][v] \ne inf$)
+
+Это корректно, т.к. если дан ориентированный взвешенный граф $H$, и к нему применили алгоритм Флойда-Уоршелла, получив
+матрицу кратчайших путей $dist_H[][]$, то, применив алгоритм Флойда-Уоршелла уже к этой матрице $dist_H[][]$, проинтерпретировав
+её как матрицу весов, алгоритм вернёт ту же матрицу $dist_H$ (по факту, ни на одной итерации алгоритма обновление элементов
+матрицы не произойдёт, т.к. между вершинами уже найдены оптимальные пути в виду выполнения неравенства треугольника)
+
+В качестве примера рассмотрим матрицу $dist[][]$:
+
+$$
+dist = \begin{bmatrix}
+     0 & \infty & 4 & \infty & 2 \\
+    -1 &  0 & 3 & \infty & 1 \\
+     4 & \infty & 0 & \infty & 6 \\
+     2 & \infty & 3 &  0 & 4 \\ 
+     1 & \infty & 2 & \infty & 0 \\
+\end{bmatrix}
+$$
+
+Здесь присутствует путь отрицательного веса между вершинами $v_2$ и $v_1$, а также не между любой парой вершин есть путь
+
+Для всех троек элементов данной матриц выполняется неравенство треугольника в форме (1)
+
+Применив к $dist[][]$ алгоритм Флойда-Уоршелла, получим ту же матрицу $dist[][]$
+
+Тогда для восстанавливаемого графа положим матрицу весов равной $ w = dist $ и сформируем список смежности:
+
+\begin{align*}
+    L_G = \{ & \\
+        v_1: & \, \{ v_3, v_5 \}, \\
+        v_2: & \, \{ v_1, v_3, v_5 \}, \\
+        v_3: & \, \{ v_1, v_5 \}, \\
+        v_4: & \, \{ v_1, v_3, v_5 \} \\
+        v_5: & \, \{ v_1, v_3 \} \\
+    \} \hspace*{1cm} & \\
+\end{align*}
+
+% Для всех пар $ 1 \le i \ne j \le n $, таких что $dist[v_i][v_j] \ne \infty $:
+
+% Если \[ \forall k: k = i \vee k = j \vee dist[v_i][v_k] = \infty \vee dist[v_k][v_j] = \infty \vee dist[v_i][v_k] + dist[v_k][v_j] > dist[v_i][v_j] \]
+
+% то из вершины $v_i$ нельзя попасть в вершину $v_j$ через какую-либо другую вершину.
+% Но при этом $dist[v_i][v_j] \ne \infty \implies (v_i, v_j) \in E $,
+% т.е. просто соединяем вершины ориентированным ребром
+
+% Иначе, если \[ \exists k: k \ne i \wedge k \ne j \wedge dist[v_i][v_k] \ne \infty \wedge dist[v_k][v_j] \ne \infty \wedge dist[v_i][v_k] + dist[v_k][v_j] = dist[v_i][v_j] \]
+
+% то через такие вершины $v_k$ можно пройти на пути из $v_i$ в $v_j$. Добавим все такие вершины $v_k$ в список вершин, которые могут быть на пути из $v_i$ в $v_j$
+
+\par
+
+\pagebreak
+
+\section*{Пункт 4.}
+
+\raggedright
+
+Т.к. в графе $G = (V, E)$ есть путь  из $a$ в $b$, проходящий через ребро $(v_i, v_j)$, то из вершины
+$a$ есть путь $P_{a, v_i}$ до вершины $v_i$ и из вершины $v_j$ есть путь $P_{v_j, b}$ до вершины $b$.
+Аналогично, т.к. в графе $G$ есть путь из $b$ в $a$, проходящий через ребро $(v_i, v_j)$, то из вершины 
+$b$ есть путь $P_{b, v_i}$ до вершины $v_i$ и из вершины $v_j$ есть путь $P_{v_j, a}$ до вершины $a$.
+
+Следовательно, в графе $G$ есть циклы $P_{a, v_i} \cup \{ (v_i, v_j) \} \cup P_{v_j, a}$ и $P_{b, v_i} \cup \{ (v_i, v_j) \} \cup P_{v_j, b}$.
+
+При этом, кратчайшие пути по условию существуют, то есть из этих циклов не достижимы циклы отрицательного веса, если они есть в графе $G$
+(точнее, если и есть ребро из данных циклов в цикл с отрицательным весом, то обратно из этого цикла с отрицательным весом в данные циклы вернуться нельзя),
+и сами циклы неотрцательного веса (иначе бы из $a$ в $a$ можно было прийти со сколько угодно малым весом пути)
+
+Пример такого графа:
+
+\includegraphics[scale=0.5]{a2_t4.png}
+
+Данные ограничения на граф не гарантируют отсутствие цикла отрицательного веса, но и не накладвают дополнительные ограничения на структуру графа
+кроме наличия указанных выше циклов (которые, как показано, неотрицательного веса), а 
+алгоритм Дейкстры, A*, Форда-Беллмана и Флойда-Уоршелла корректно работают при наличии циклов, если их вес $\ge 0$.
+
+\par
+
+\pagebreak
+
+\section*{Пункт 3.}
+
+Рассмотрим граф $G = (V, E, w)$, где $ V = \{ 1, 2, 3, 4 \}, E = \{ (1, 2), (2, 3), (3, 4), (4, 1) \} $
+
+Матрица весов графа:
+$$
+w = \begin{bmatrix}
+0 & 1 & +\infty & +\infty \\
++\infty & 0 & 1 & +\infty \\
++\infty & +\infty & 0 & 1 \\
+1 & +\infty & +\infty & 0 \\
+\end{bmatrix}
+$$
+
+$\begin{tikzpicture}
+    \node[draw,align=left] at (0, 1) {Граф G:};
+    \coordinate (v1) at (0, 0);
+    \coordinate (v2) at (2, 0);
+    \coordinate (v3) at (2, -2);
+    \coordinate (v4) at (0, -2);
+    \filldraw[black] (v1) circle (1pt) node[anchor=south]{$v_1$};
+    \filldraw[black] (v2) circle (1pt) node[anchor=south]{$v_2$};
+    \filldraw[black] (v3) circle (1pt) node[anchor=north]{$v_3$};
+    \filldraw[black] (v4) circle (1pt) node[anchor=north]{$v_4$};
+    \draw[-stealth] (v1) -- node[anchor=south]{1} (v2);
+    \draw[-stealth] (v2) -- node[anchor=west]{1} (v3);
+    \draw[-stealth] (v3) -- node[anchor=north]{1} (v4);
+    \draw[-stealth] (v4) -- node[anchor=east]{1} (v1);
+\end{tikzpicture} $
+
+Инициализация матрицы $dist[][]$
+$$
+dist = w = \begin{bmatrix}
+0 & 1 & +\infty & +\infty \\
++\infty & 0 & 1 & +\infty \\
++\infty & +\infty & 0 & 1 \\
+1 & +\infty & +\infty & 0 \\
+\end{bmatrix}
+$$
+
+\raggedright
+Опишем 64 итераций алгоритма в таблице ниже
+
+(латех смещает таблицу в конец документа, вставить её между последующим выводом о получившейся матрице $dist[][]$ и фразой "Опишем 64 итераций..." не получилось)
+
+Получившаяся матрица расстояний:
+
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & 2 \\
+    2 & 3 & 0 & 1 \\
+    1 & 2 & 3 & 0 \\
+\end{bmatrix}$
+
+Однако корректный алгоритм Флойда-Уоршелла завершает работу, найдя такую матрицу расстояний:
+
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    3 & 0 & 1 & 2 \\
+    2 & 3 & 0 & 1 \\
+    1 & 2 & 3 & 0 \\
+\end{bmatrix}$
+
+Таким образом, некорректный вариант алгоритма не смог найти путь из $v_2$ в $v_1$
+
+\par
+
+\begin{table}[h]
+\centering
+\begin{tabular}{ccccccc}
+\toprule
+\multicolumn{1}{c}{} & \multicolumn{3}{c}{\textbf{for cycle values}} & \multicolumn{3}{c}{\textbf{dist values}} \\
+\cmidrule(rl){2-4} \cmidrule(rl){5-7}
+{$dist[][]$ before update} & {i} & {j} & {k} & {$dist[i][j]$ before update} & {$dist[i][k] + dist[k][j]$} & {$dist[i][j]$ after update} \\
+\midrule
+$\begin{bmatrix}
+    0 & 1 & +\infty & +\infty \\
+    +\infty & 0 & 1 & +\infty \\
+    +\infty & +\infty & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 1 & 1 & 1 & 0 & 0 & 0 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & +\infty & +\infty \\
+    +\infty & 0 & 1 & +\infty \\
+    +\infty & +\infty & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 1 & 1 & 2 & 0 & $+\infty$ & 0 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & +\infty & +\infty \\
+    +\infty & 0 & 1 & +\infty \\
+    +\infty & +\infty & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 1 & 1 & 3 & 0 & $+\infty$ & 0 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & +\infty & +\infty \\
+    +\infty & 0 & 1 & +\infty \\
+    +\infty & +\infty & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 1 & 1 & 4 & 0 & $+\infty$ & 0 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & +\infty & +\infty \\
+    +\infty & 0 & 1 & +\infty \\
+    +\infty & +\infty & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 1 & 2 & 1 & 1 & 1 & 1 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & +\infty & +\infty \\
+    +\infty & 0 & 1 & +\infty \\
+    +\infty & +\infty & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 1 & 2 & 2 & 1 & 1 & 1 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & +\infty & +\infty \\
+    +\infty & 0 & 1 & +\infty \\
+    +\infty & +\infty & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 1 & 2 & 3 & 1 & $+\infty$ & 1 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & +\infty & +\infty \\
+    +\infty & 0 & 1 & +\infty \\
+    +\infty & +\infty & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 1 & 2 & 4 & 1 & $+\infty$ & 1 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & +\infty & +\infty \\
+    +\infty & 0 & 1 & +\infty \\
+    +\infty & +\infty & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 1 & 3 & 1 & $+\infty$ & $+\infty$ & $+\infty$ \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & +\infty & +\infty \\
+    +\infty & 0 & 1 & +\infty \\
+    +\infty & +\infty & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 1 & 3 & 2 & $+\infty$ & 2 & 2 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{ccccccc}
+\toprule
+\multicolumn{1}{c}{} & \multicolumn{3}{c}{\textbf{for cycle values}} & \multicolumn{3}{c}{\textbf{dist values}} \\
+\cmidrule(rl){2-4} \cmidrule(rl){5-7}
+{$dist[][]$ before update} & {i} & {j} & {k} & {$dist[i][j]$ before update} & {$dist[i][k] + dist[k][j]$} & {$dist[i][j]$ after update} \\
+\midrule
+$\begin{bmatrix}
+    0 & 1 & 2 & +\infty \\
+    +\infty & 0 & 1 & +\infty \\
+    +\infty & +\infty & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 1 & 3 & 3 & 2 & 2 & 2 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & +\infty \\
+    +\infty & 0 & 1 & +\infty \\
+    +\infty & +\infty & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 1 & 3 & 4 & 2 & $+\infty$ & 2 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & +\infty \\
+    +\infty & 0 & 1 & +\infty \\
+    +\infty & +\infty & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 1 & 4 & 1 & $+\infty$ & $+\infty$ & $+\infty$ \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & +\infty \\
+    +\infty & 0 & 1 & +\infty \\
+    +\infty & +\infty & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 1 & 4 & 2 & $+\infty$ & $+\infty$ & $+\infty$ \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & +\infty \\
+    +\infty & 0 & 1 & +\infty \\
+    +\infty & +\infty & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 1 & 4 & 3 & $+\infty$ & 3 & 3 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & +\infty \\
+    +\infty & +\infty & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 1 & 4 & 4 & 3 & 3 & 3 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & +\infty \\
+    +\infty & +\infty & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 2 & 1 & 1 & $+\infty$ & $+\infty$ & $+\infty$ \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & +\infty \\
+    +\infty & +\infty & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 2 & 1 & 2 & $+\infty$ & $+\infty$ & $+\infty$ \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & +\infty \\
+    +\infty & +\infty & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 2 & 1 & 3 & $+\infty$ & $+\infty$ & $+\infty$ \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & +\infty \\
+    +\infty & +\infty & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 2 & 1 & 4 & $+\infty$ & $+\infty$ & $+\infty$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{ccccccc}
+\toprule
+\multicolumn{1}{c}{} & \multicolumn{3}{c}{\textbf{for cycle values}} & \multicolumn{3}{c}{\textbf{dist values}} \\
+\cmidrule(rl){2-4} \cmidrule(rl){5-7}
+{$dist[][]$ before update} & {i} & {j} & {k} & {$dist[i][j]$ before update} & {$dist[i][k] + dist[k][j]$} & {$dist[i][j]$ after update} \\
+\midrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & +\infty \\
+    +\infty & +\infty & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 2 & 2 & 1 & 0 & $+\infty$ & 0 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & +\infty \\
+    +\infty & +\infty & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 2 & 2 & 2 & 0 & 0 & 0 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & +\infty \\
+    +\infty & +\infty & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 2 & 2 & 3 & 0 & $+\infty$ & 0 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & +\infty \\
+    +\infty & +\infty & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 2 & 2 & 4 & 0 & $+\infty$ & 0 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & +\infty \\
+    +\infty & +\infty & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 2 & 3 & 1 & 1 & $+\infty$ & 1 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & +\infty \\
+    +\infty & +\infty & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 2 & 3 & 2 & 1 & 1 & 1 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & +\infty \\
+    +\infty & +\infty & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 2 & 3 & 3 & 1 & 1 & 1 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & +\infty \\
+    +\infty & +\infty & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 2 & 3 & 4 & 1 & $+\infty$ & 1 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & +\infty \\
+    +\infty & +\infty & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 2 & 4 & 1 & $+\infty$ & $+\infty$ & $+\infty$ \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & +\infty \\
+    +\infty & +\infty & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 2 & 4 & 2 & $+\infty$ & $+\infty$ & $+\infty$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{ccccccc}
+\toprule
+\multicolumn{1}{c}{} & \multicolumn{3}{c}{\textbf{for cycle values}} & \multicolumn{3}{c}{\textbf{dist values}} \\
+\cmidrule(rl){2-4} \cmidrule(rl){5-7}
+{$dist[][]$ before update} & {i} & {j} & {k} & {$dist[i][j]$ before update} & {$dist[i][k] + dist[k][j]$} & {$dist[i][j]$ after update} \\
+\midrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & +\infty \\
+    +\infty & +\infty & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 2 & 4 & 3 & $+\infty$ & 2 & 2 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & 2 \\
+    +\infty & +\infty & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 2 & 4 & 4 & 2 & 2 & 2 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & 2 \\
+    +\infty & +\infty & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 3 & 1 & 1 & $+\infty$ & $+\infty$ & $+\infty$ \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & 2 \\
+    +\infty & +\infty & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 3 & 1 & 2 & $+\infty$ & $+\infty$ & $+\infty$ \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & 2 \\
+    +\infty & +\infty & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 3 & 1 & 3 & $+\infty$ & $+\infty$ & $+\infty$ \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & 2 \\
+    +\infty & +\infty & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 3 & 1 & 4 & $+\infty$ & 2 & 2 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & 2 \\
+    2 & +\infty & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 3 & 2 & 1 & $+\infty$ & 3 & 3 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & 2 \\
+    2 & 3 & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 3 & 2 & 2 & 3 & 3 & 3 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & 2 \\
+    2 & 3 & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 3 & 2 & 3 & 3 & 3 & 3 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & 2 \\
+    2 & 3 & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 3 & 2 & 4 & 3 & $+\infty$ & 3 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{ccccccc}
+\toprule
+\multicolumn{1}{c}{} & \multicolumn{3}{c}{\textbf{for cycle values}} & \multicolumn{3}{c}{\textbf{dist values}} \\
+\cmidrule(rl){2-4} \cmidrule(rl){5-7}
+{$dist[][]$ before update} & {i} & {j} & {k} & {$dist[i][j]$ before update} & {$dist[i][k] + dist[k][j]$} & {$dist[i][j]$ after update} \\
+\midrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & 2 \\
+    2 & 3 & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 3 & 3 & 1 & 0 & 4 & 0 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & 2 \\
+    2 & 3 & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 3 & 3 & 2 & 0 & 4 & 0 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & 2 \\
+    2 & 3 & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 3 & 3 & 3 & 0 & 0 & 0 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & 2 \\
+    2 & 3 & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 3 & 3 & 4 & 0 & $+\infty$ & 0 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & 2 \\
+    2 & 3 & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 3 & 4 & 1 & 1 & 5 & 1 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & 2 \\
+    2 & 3 & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 3 & 4 & 2 & 1 & 5 & 1 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & 2 \\
+    2 & 3 & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 3 & 4 & 3 & 1 & 1 & 1 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & 2 \\
+    2 & 3 & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 3 & 4 & 4 & 1 & 1 & 1 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & 2 \\
+    2 & 3 & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 4 & 1 & 1 & 1 & 1 & 1 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & 2 \\
+    2 & 3 & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 4 & 1 & 2 & 1 & $+\infty$ & 1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{ccccccc}
+\toprule
+\multicolumn{1}{c}{} & \multicolumn{3}{c}{\textbf{for cycle values}} & \multicolumn{3}{c}{\textbf{dist values}} \\
+\cmidrule(rl){2-4} \cmidrule(rl){5-7}
+{$dist[][]$ before update} & {i} & {j} & {k} & {$dist[i][j]$ before update} & {$dist[i][k] + dist[k][j]$} & {$dist[i][j]$ after update} \\
+\midrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & 2 \\
+    2 & 3 & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 4 & 1 & 3 & 1 & $+\infty$ & 1 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & 2 \\
+    2 & 3 & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 4 & 1 & 4 & 1 & 1 & 1 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & 2 \\
+    2 & 3 & 0 & 1 \\
+    1 & +\infty & +\infty & 0 \\
+\end{bmatrix}$ & 4 & 2 & 1 & $+\infty$ & 2 & 2 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & 2 \\
+    2 & 3 & 0 & 1 \\
+    1 & 2 & +\infty & 0 \\
+\end{bmatrix}$ & 4 & 2 & 2 & 2 & 2 & 2 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & 2 \\
+    2 & 3 & 0 & 1 \\
+    1 & 2 & +\infty & 0 \\
+\end{bmatrix}$ & 4 & 2 & 3 & 2 & $+\infty$ & 2 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & 2 \\
+    2 & 3 & 0 & 1 \\
+    1 & 2 & +\infty & 0 \\
+\end{bmatrix}$ & 4 & 2 & 4 & 2 & 2 & 2 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & 2 \\
+    2 & 3 & 0 & 1 \\
+    1 & 2 & +\infty & 0 \\
+\end{bmatrix}$ & 4 & 3 & 1 & $+\infty$ & 3 & 3 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & 2 \\
+    2 & 3 & 0 & 1 \\
+    1 & 2 & 3 & 0 \\
+\end{bmatrix}$ & 4 & 3 & 2 & 3 & 3 & 3 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & 2 \\
+    2 & 3 & 0 & 1 \\
+    1 & 2 & 3 & 0 \\
+\end{bmatrix}$ & 4 & 3 & 3 & 3 & 3 & 3 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & 2 \\
+    2 & 3 & 0 & 1 \\
+    1 & 2 & 3 & 0 \\
+\end{bmatrix}$ & 4 & 3 & 4 & 3 & 3 & 3 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{ccccccc}
+\toprule
+\multicolumn{1}{c}{} & \multicolumn{3}{c}{\textbf{for cycle values}} & \multicolumn{3}{c}{\textbf{dist values}} \\
+\cmidrule(rl){2-4} \cmidrule(rl){5-7}
+{$dist[][]$ before update} & {i} & {j} & {k} & {$dist[i][j]$ before update} & {$dist[i][k] + dist[k][j]$} & {$dist[i][j]$ after update} \\
+\midrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & 2 \\
+    2 & 3 & 0 & 1 \\
+    1 & 2 & 3 & 0 \\
+\end{bmatrix}$ & 4 & 4 & 1 & 0 & 4 & 0 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & 2 \\
+    2 & 3 & 0 & 1 \\
+    1 & 2 & 3 & 0 \\
+\end{bmatrix}$ & 4 & 4 & 2 & 0 & 4 & 0 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & 2 \\
+    2 & 3 & 0 & 1 \\
+    1 & 2 & 3 & 0 \\
+\end{bmatrix}$ & 4 & 4 & 3 & 0 & 4 & 0 \\
+\bottomrule
+$\begin{bmatrix}
+    0 & 1 & 2 & 3 \\
+    +\infty & 0 & 1 & 2 \\
+    2 & 3 & 0 & 1 \\
+    1 & 2 & 3 & 0 \\
+\end{bmatrix}$ & 4 & 4 & 4 & 0 & 0 & 0 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\end{document}
