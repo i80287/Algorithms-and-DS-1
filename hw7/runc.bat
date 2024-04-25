@@ -1,0 +1,1 @@
+.\f.exe < in.txt
