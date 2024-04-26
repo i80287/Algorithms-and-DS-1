@@ -1,4 +1,4 @@
-#define NDEBUG
+// #define NDEBUG
 
 #include <array>
 #include <cassert>
@@ -39,36 +39,25 @@ struct node_t {
 }  // namespace
 
 [[maybe_unused]] static void add_1(vector<node_t>& nodes, string_view s) {
+    size_t current_node_index = kRootNodeIndex;
     auto iter                 = s.begin();
     const auto iter_end       = s.end();
-    size_t current_node_index = kRootNodeIndex;
     for (; iter != iter_end; ++iter) {
-        size_t index = size_t(uint8_t(*iter)) - '0';
-        assert(index <= 1);
-        assert(current_node_index < nodes.size());
+        size_t index           = size_t(uint8_t(*iter)) - '0';
         size_t next_node_index = nodes[current_node_index][index];
         if (next_node_index != kNullNodeIndex) {
             current_node_index = next_node_index;
         } else {
-            break;
+            size_t new_node_index = nodes.size();
+            nodes.emplace_back();
+            nodes[current_node_index][index] = new_node_index;
+            current_node_index               = new_node_index;
         }
     }
-
-    auto lasted_max_length = static_cast<size_t>(iter_end - iter);
-    nodes.reserve(nodes.size() + lasted_max_length);
-    for (size_t new_node_index = nodes.size(); iter != iter_end; ++iter) {
-        size_t index = size_t(uint8_t(*iter)) - '0';
-        assert(index <= 1);
-        nodes.emplace_back();
-        assert(current_node_index < nodes.size());
-        nodes[current_node_index][index] = new_node_index;
-        current_node_index               = new_node_index++;
-    }
-    assert(current_node_index < nodes.size());
     nodes[current_node_index].is_terminal = true;
 }
 
-[[maybe_unused]] void add(vector<node_t>& nodes, string_view s) {
+[[maybe_unused]] static void add(vector<node_t>& nodes, string_view s) {
     size_t current_node_index = kRootNodeIndex;
     for (char c : s) {
         size_t index           = size_t(uint8_t(c)) - '0';
@@ -207,7 +196,13 @@ static bool find_clear_cycle(const vector<node_t>& nodes) {
     return false;
 }
 
+#include <chrono>
+
+namespace chrono = std::chrono;
+
 int main() {
+    const auto start = chrono::high_resolution_clock::now();
+
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
@@ -218,10 +213,13 @@ int main() {
     cin >> n;
     for (string s; n > 0; n--) {
         cin >> s;
-        add(nodes, s);
+        add_1(nodes, s);
     }
     build(nodes);
     constexpr string_view kYes("TAK");
     constexpr string_view kNo("NIE");
     cout << (find_clear_cycle(nodes) ? kYes : kNo);
+
+    const auto end = chrono::high_resolution_clock::now();
+    cout << '\n' << chrono::duration_cast<chrono::milliseconds>(end - start);
 }
