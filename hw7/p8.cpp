@@ -88,7 +88,7 @@ int main() {
     cin.tie(nullptr);
     string s;
     s.reserve(size_t(2e4));
-    s = "";
+    s = "abcd";
     // std::getline(std::cin, s);
     const auto codes = encode(s);
     cout << codes.size() << '\n';
@@ -109,4 +109,6 @@ int main() {
     ans += s;
     ans += "\");";
     clipboardxx::clipboard() << ans;
+    using namespace std::chrono_literals;
+    std::this_thread::sleep_for(1000ms);
 }
