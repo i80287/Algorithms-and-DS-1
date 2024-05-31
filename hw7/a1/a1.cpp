@@ -1,64 +1,127 @@
 #include <cassert>
 #include <cmath>
 #include <cstdint>
+#include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <ostream>
 
 #include "MeasureTools.hpp"
+#include "MergeSort.hpp"
+#include "MSDRadixSort.hpp"
 #include "QuickSort.hpp"
 #include "StringGenerator.hpp"
+#include "StringMergeSort.hpp"
+#include "StringQuickSort.hpp"
 
 inline constexpr std::uint_fast32_t kStringGenSeed = 367218;
 inline constexpr std::size_t kMinStringSize        = 10;
 inline constexpr std::size_t kMaxStringSize        = 200;
 
 inline constexpr std::size_t kMinArraySize  = 1000;
-inline constexpr std::size_t kMaxArraySize  = 30000;
+inline constexpr std::size_t kMaxArraySize  = 60000;
 inline constexpr std::size_t kArraySizeStep = 1000;
 
-static void check_sorting_algorithms() {
-    auto reversed_strings =
-        stringgen::StringGenerator<kMaxArraySize, 20>{kStringGenSeed}.add_shuffled_strings().get();
+template <class MeasureResultType, std::size_t N>
+void save_measure_results(std::string_view algo_name, std::string_view array_type,
+                          const std::array<MeasureResultType, N>& measure_results) {
+    std::string fname(std::string_view(kIsMeasuringTime ? "time_" : "comp_"));
+    fname += std::string(algo_name);
+    fname += '_';
+    fname += array_type;
+    fname += ".csv";
+    for (char& c : fname) {
+        switch (c) {
+            case '<':
+                c = '[';
+                break;
+            case '>':
+                c = ']';
+                break;
+        }
+    }
+    std::ofstream fout(fname);
+    if (!fout) {
+        std::cout << "bad " << fname << '\n';
+        return;
+    }
 
-    std::ranges::sort(reversed_strings, std::ranges::greater{});
-    algorithms::quick_sort(reversed_strings);
-    assert(std::ranges::is_sorted(reversed_strings));
+    if constexpr (kIsMeasuringTime) {
+        fout << "N,Time\n";
+        for (auto [size, time] : measure_results) {
+            fout << size << ',' << time.count() << '\n';
+        }
+    } else {
+        static_assert(std::is_same_v<MeasureResultType, measuretools::ComparisonsMeasureResult>);
+        fout << "N,Comparisons\n";
+        for (auto [size, comparisons] : measure_results) {
+            fout << size << ',' << comparisons << '\n';
+        }
+    }
+}
 
-    std::ranges::sort(reversed_strings, std::ranges::greater{});
-    algorithms::quick_sort(reversed_strings);
-    assert(std::ranges::is_sorted(reversed_strings));
+template <class = void> // In order to instantiate lazily
+void measure_time_over(const StringsArrayType& strings, std::string_view array_type) {
+    using namespace measuretools;
+    constexpr MeasureParams kParams = {
+        .MinArraySize  = kMinArraySize,
+        .MaxArraySize  = kMaxArraySize,
+        .ArraySizeStep = kArraySizeStep,
+    };
+
+    auto measure_and_save = [&](auto sorting_algo) {
+        save_measure_results(
+            sorting_algo.kAlgorithmName, array_type,
+            measuretools::measure_call_time_over_subranges<kParams>(strings, sorting_algo));
+    };
+    measure_and_save(algorithms::merge_sort);
+    measure_and_save(algorithms::quick_sort);
+    measure_and_save(algorithms::string_merge_sort);
+    measure_and_save(algorithms::string_quick_sort);
+    measure_and_save(algorithms::msd_radix_sort<true>);
+    measure_and_save(algorithms::msd_radix_sort<false>);
+}
+
+template <class = void> // In order to instantiate lazily
+void measure_comparisons_over(const StringsArrayType& strings, std::string_view array_type) {
+    using namespace measuretools;
+    constexpr MeasureParams kParams = {
+        .MinArraySize  = kMinArraySize,
+        .MaxArraySize  = kMaxArraySize,
+        .ArraySizeStep = kArraySizeStep,
+    };
+
+    auto measure_and_save = [&](auto sorting_algo) {
+        save_measure_results(
+            sorting_algo.kAlgorithmName, array_type,
+            measuretools::measure_comparions_over_subranges<kParams>(strings, sorting_algo));
+    };
+    measure_and_save(algorithms::merge_sort);
+    measure_and_save(algorithms::quick_sort);
+    measure_and_save(algorithms::string_merge_sort);
+    measure_and_save(algorithms::string_quick_sort);
+    measure_and_save(algorithms::msd_radix_sort<true>);
+    measure_and_save(algorithms::msd_radix_sort<false>);
 }
 
 int main() {
-    check_sorting_algorithms();
-
     const auto [shuffled_strings, rev_sorted_strings, almost_sorted_strings] =
-        stringgen::StringGenerator<kMaxArraySize, kMaxStringSize>{kStringGenSeed}
+        gen_tools::StringGenerator<kMaxArraySize, kMaxStringSize>{kStringGenSeed}
             .add_shuffled_strings()
             .add_reversed_sorted_strings()
             .add_almost_sorted_strings()
             .get();
-
-    using namespace measuretools;
-    auto measure_results_2 =
-        measuretools::measure_call_time_over_subranges<kMinArraySize, kMaxArraySize, kArraySizeStep>(
-            shuffled_strings, [](StringsArrayType::iterator begin, StringsArrayType::iterator end) {
-                std::ranges::sort(begin, end);
-            });
-    std::cout << std::left;
-    for (auto [size, time] : measure_results_2) {
-        std::cout << std::setw(10) << size << " | " << std::setw(10) << time << '\n';
+    if constexpr (kIsMeasuringTime) {
+        std::cout << "Starting to measure time...\n";
+        measure_time_over(shuffled_strings, "shuffled_strings");
+        measure_time_over(rev_sorted_strings, "reversed_sorted_strings");
+        measure_time_over(almost_sorted_strings, "almost_sorted_strings");
+        std::cout << "Ended measuring time\n";
+    } else {
+        std::cout << "Starting to measure comparisons count...\n";
+        measure_comparisons_over(shuffled_strings, "shuffled_strings");
+        measure_comparisons_over(rev_sorted_strings, "reversed_sorted_strings");
+        measure_comparisons_over(almost_sorted_strings, "almost_sorted_strings");
+        std::cout << "Ended measuring comparisons count\n";
     }
-    auto measure_results_1 =
-        measuretools::measure_call_time_over_subranges<kMinArraySize, kMaxArraySize, kArraySizeStep>(
-            shuffled_strings, [](StringsArrayType::iterator begin, StringsArrayType::iterator end) {
-                algorithms::quick_sort(begin, end);
-                assert(std::ranges::is_sorted(begin, end));
-            });
-    std::cout << std::left;
-    for (auto [size, time] : measure_results_1) {
-        std::cout << std::setw(10) << size << " | " << std::setw(10) << time << '\n';
-    }
-
-    return 0;
 }

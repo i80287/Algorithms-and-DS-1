@@ -12,9 +12,9 @@
 
 #include "config.hpp"
 
-namespace stringgen {
-
+namespace gen_tools {
 namespace detail {
+namespace {
 
 using namespace std::string_view_literals;
 
@@ -25,6 +25,7 @@ inline constexpr std::size_t kDefaultSwapsRatio = 16;
 
 inline constexpr std::size_t kDynamicExtent = static_cast<std::size_t>(-1);
 
+}  // namespace
 }  // namespace detail
 
 template <std::size_t NumberOfStrings, std::size_t OneStringSize>
@@ -32,17 +33,17 @@ inline void append_shuffled_strings(StringsArrayType& arr, std::mt19937& rnd) {
     arr.reserve(NumberOfStrings);
     for (auto iter = NumberOfStrings; iter > 0; iter--) {
         std::ranges::generate(arr.emplace_back(OneStringSize, '\0'), [&rnd = rnd]() noexcept {
-            return ::stringgen::detail::kAlphabet[std::uniform_int_distribution<std::size_t>(
-                0, ::stringgen::detail::kAlphabet.size() - 1)(rnd)];
+            return ::gen_tools::detail::kAlphabet[std::uniform_int_distribution<std::size_t>(
+                0, ::gen_tools::detail::kAlphabet.size() - 1)(rnd)];
         });
     }
 }
 
-template <std::size_t NumberOfStrings = ::stringgen::detail::kDynamicExtent,
-          std::size_t SwapsRation     = ::stringgen::detail::kDefaultSwapsRatio>
+template <std::size_t NumberOfStrings = ::gen_tools::detail::kDynamicExtent,
+          std::size_t SwapsRation     = ::gen_tools::detail::kDefaultSwapsRatio>
 inline void swap_some_strings_inplace(StringsArrayType& arr, std::mt19937& rnd) {
     std::size_t size;
-    if constexpr (NumberOfStrings == ::stringgen::detail::kDynamicExtent) {
+    if constexpr (NumberOfStrings == ::gen_tools::detail::kDynamicExtent) {
         size = arr.size();
     } else {
         assert(NumberOfStrings <= arr.size());
@@ -57,6 +58,7 @@ inline void swap_some_strings_inplace(StringsArrayType& arr, std::mt19937& rnd) 
 }
 
 namespace detail {
+namespace {
 
 enum class StringsArrayTag {
     kShuffled,
@@ -111,8 +113,8 @@ public:
 private:
     template <StringsArrayTag FillStrategy>
     void fill_impl(StringsArrayType& strings_array) {
+        append_shuffled_strings<NumberOfStrings, OneStringSize>(strings_array, rnd_);
         if constexpr (FillStrategy == StringsArrayTag::kShuffled) {
-            append_shuffled_strings<NumberOfStrings, OneStringSize>(strings_array, rnd_);
         } else if constexpr (FillStrategy == StringsArrayTag::kSorted) {
             std::ranges::sort(strings_array);
         } else if constexpr (FillStrategy == StringsArrayTag::kReversedSorted) {
@@ -124,7 +126,8 @@ private:
         }
     }
 
-    template <std::size_t FillIndex, StringsArrayTag FillStrategy, StringsArrayTag... NextFillStrategies>
+    template <std::size_t FillIndex, StringsArrayTag FillStrategy,
+              StringsArrayTag... NextFillStrategies>
     void fill_array(GetReturnType& arr) {
         fill_impl<FillStrategy>(std::get<FillIndex>(arr));
         if constexpr (sizeof...(NextFillStrategies) > 0) {
@@ -170,9 +173,10 @@ private:
     RandomGenerator rnd_;
 };
 
+}  // namespace
 };  // namespace detail
 
 template <std::size_t NumberOfStrings, std::size_t OneStringSize>
 using StringGenerator = detail::StringGeneratorImpl<NumberOfStrings, OneStringSize>;
 
-};  // namespace stringgen
+};  // namespace gen_tools
