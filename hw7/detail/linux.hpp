@@ -24,7 +24,7 @@ public:
     }
 
 private:
-    const std::unique_ptr<LinuxClipboardProvider> m_provider;
+    const std::unique_ptr<X11Provider> m_provider;
 };
 
 }  // namespace clipboardxx

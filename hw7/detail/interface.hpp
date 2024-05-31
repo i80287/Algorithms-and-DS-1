@@ -6,11 +6,12 @@
 namespace clipboardxx {
 
 template <class ClipboardInterface, class ClipboardType>
-concept ClipboardConcept = std::derived_from<ClipboardType, ClipboardInterface> &&
-                           requires(const ClipboardType clp, std::string text) {
-                               { clp.copy(text) } -> std::same_as<void>;
-                               { clp.paste() } -> std::same_as<std::string>;
-                           };
+concept ClipboardConcept =
+    std::derived_from<ClipboardType, ClipboardInterface> &&
+    requires(const ClipboardType clp, std::string text) {
+        { clp.copy(text) } -> std::same_as<void>;
+        { clp.paste() } -> std::same_as<std::string>;
+    };
 
 template <class DerivedClipboard>
 class ClipboardInterface {
