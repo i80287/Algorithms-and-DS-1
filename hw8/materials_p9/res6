@@ -1,0 +1,10 @@
+filename=/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/p9_t67_parallel.cpp,kPackSize=16
+Starting 16 threads
+Starting 3 threads
+| maxans_seed = 371370392 | maxans = 7561 | maxans_gamma = 0.75000000000000000000 | maxans_min_gamma = 1.00000000000000002082e-03 |
+
+filename=/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/p9_t67_parallel.cpp,kPackSize=14
+Total: 28 gamma values
+Starting 14 threads
+Starting 14 threads
+| maxans_seed = 2276599835 | maxans = 7561 | maxans_gamma = 0.72999999999999998224 | maxans_min_gamma = 1.00000000000000002082e-03 |
