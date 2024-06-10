@@ -1,21 +1,67 @@
 #ifndef CONFIG_MACROS_HPP
 #define CONFIG_MACROS_HPP 1
 
+#ifdef __has_include
+#if __has_include(<version>)
+#include <version>
+#elif __has_include(<ciso646>)
+#include <ciso646>
+#elif __has_include(<iso646.h>)
+#include <iso646.h>
+#endif
+#endif
+
 /* Test for gcc >= maj.min, as per __GNUC_PREREQ in glibc */
 #if defined(__GNUC__) && defined(__GNUC_MINOR__)
-#define CONFIG_GNUC_PREREQ(maj, min) \
-    ((__GNUC__ << 16) + __GNUC_MINOR__ >= ((maj) << 16) + (min))
+#define CONFIG_GNUC_PREREQ(maj, min) ((__GNUC__ << 16) + __GNUC_MINOR__ >= ((maj) << 16) + (min))
 #else
 #define CONFIG_GNUC_PREREQ(maj, min) 0
 #endif
 
+// https://en.cppreference.com/w/cpp/feature_test
+#if defined(__cplusplus) && __cplusplus >= 201703L
+#define CONFIG_HAS_AT_LEAST_CXX_17 1
+#else
+#define CONFIG_HAS_AT_LEAST_CXX_17 0
+#endif
+
+#if defined(__cplusplus) && __cplusplus >= 202002L
+#define CONFIG_HAS_AT_LEAST_CXX_20 1
+#else
+#define CONFIG_HAS_AT_LEAST_CXX_20 0
+#endif
+
+#if defined(__cplusplus) && __cplusplus >= 202302L
+#define CONFIG_HAS_AT_LEAST_CXX_23 1
+#else
+#define CONFIG_HAS_AT_LEAST_CXX_23 0
+#endif
+
+// https://en.cppreference.com/w/cpp/feature_test
+#if defined(__cpp_concepts) && __cpp_concepts >= 202002L
+#define CONFIG_HAS_CONCEPTS 1
+#else
+#define CONFIG_HAS_CONCEPTS 0
+#endif
+
+#if defined(__has_include)
+#define CONFIG_HAS_INCLUDE(include_string) __has_include(include_string)
+#else
+#define CONFIG_HAS_INCLUDE(include_string) 0
+#endif
+
 /* Test for __has_attribute as per __glibc_has_attribute in glibc */
-#if (defined(__has_attribute) &&   \
-     (!defined(__clang_major__) || \
-      3 < __clang_major__ + (5 <= __clang_minor__)))
+#if (defined(__has_attribute) && \
+     (!defined(__clang_major__) || 3 < __clang_major__ + (5 <= __clang_minor__)))
 #define CONFIG_HAS_ATTRIBUTE(attr) __has_attribute(attr)
 #else
 #define CONFIG_HAS_ATTRIBUTE(attr) 0
+#endif
+
+#ifdef __has_cpp_attribute
+#define CONFIG_HAS_CPP_ATTRIBUTE(attr) __has_cpp_attribute(attr)
+#else
+#define CONFIG_HAS_CPP_ATTRIBUTE(attr) 0
 #endif
 
 #if defined(__has_builtin)
@@ -45,7 +91,7 @@
 #define FUNCTION_MACRO __func__
 #endif
 
-#if __cplusplus >= 202302L
+#if CONFIG_HAS_AT_LEAST_CXX_23 && CONFIG_HAS_CPP_ATTRIBUTE(assume)
 #define ATTRIBUTE_ASSUME(expr) [[assume(expr)]]
 #elif CONFIG_GNUC_PREREQ(13, 0) && !defined(__clang__)
 #define ATTRIBUTE_ASSUME(expr) __attribute__((assume(expr)))
@@ -166,8 +212,7 @@
  * ===----------------------------------------------------------------------===
  */
 
-#if defined(__BYTE_ORDER__) && defined(__ORDER_BIG_ENDIAN__) && \
-    defined(__ORDER_LITTLE_ENDIAN__)
+#if defined(__BYTE_ORDER__) && defined(__ORDER_BIG_ENDIAN__) && defined(__ORDER_LITTLE_ENDIAN__)
 
 /* Clang and GCC provide built-in endianness definitions. */
 #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
@@ -197,8 +242,7 @@
 
 /* .. */
 
-#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__DragonFly__) ||   \
-    defined(__minix)
+#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__DragonFly__) || defined(__minix)
 #include <sys/endian.h>
 
 #if _BYTE_ORDER == _BIG_ENDIAN
@@ -228,7 +272,7 @@
 
 /* Mac OSX has __BIG_ENDIAN__ or __LITTLE_ENDIAN__ automatically set by the
  * compiler (at least with GCC) */
-#if defined(__APPLE__) || defined(__ellcc__ )
+#if defined(__APPLE__) || defined(__ellcc__)
 
 #ifdef __BIG_ENDIAN__
 #if __BIG_ENDIAN__

@@ -190,7 +190,7 @@ static bool visit(const size_t i, const size_t j, const Engine e) {
         for (const auto [ni, nj] : nbrs) {
             if (ni >= n || nj >= m) [[unlikely]] {
                 continue;
-            }
+            }   
             for (uint32_t e1 = uint32_t(Engine::kFirst); e1 <= uint32_t(Engine::kFifth); e1++) {
                 if (!visit(ni, nj, Engine(e1))) {
                     // if update_map for {ni,nj,e1} if false,

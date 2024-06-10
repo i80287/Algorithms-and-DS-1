@@ -23,7 +23,13 @@ struct Task {
 
     void Read(std::istream& in = std::cin) {
         in >> test;
+        if (!in) {
+            throw std::runtime_error("test number");
+        }
         in >> n >> m >> wmax;
+        if (!in) {
+            throw std::runtime_error("n m wmax");
+        }
         for (auto& p_i : p) {
             in >> p_i;
         }
@@ -79,9 +85,11 @@ struct Task {
             return 0;
         }
         if (w >= wmax) {
-            return 10;
+            return 2;
         }
-        return (10. * w / wmax) * (1. * w / wmax);
+        const auto d = double(w) / wmax;
+        assert(0 < d && d < 1);
+        return 2 * d * d;
     }
 
     // Prints solution and returns it's points on test
@@ -108,9 +116,9 @@ struct Task {
     std::array<int, 5> p{};
 };
 
-int main(int argc, char* argv[]) {
+int main() {
     double total_points = 0;
-    for (int test = 1; test <= 10; test++) {
+    for (unsigned test = 1; test <= 10; test++) {
         Task task;
         task.Read("tests/input" + std::to_string(test) + ".txt");
         std::vector<Action> solution;
