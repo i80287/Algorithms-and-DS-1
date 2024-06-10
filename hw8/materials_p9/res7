@@ -1,3 +1,16 @@
 filename=/home/waste/Projects/cplusplus/Algorithms-and-DS-1/hw8/materials_p9/p9_7.cpp,initialseed=1376765028,kUseMt19937=1
 | maxans_seed = 4229335325 | maxans = 148546 | maxans_gamma = 0.99999999989999999173 | maxans_min_gamma = 1.0000000000000000209e-08 |
 
+filename=/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/p9_t67_parallel.cpp
+| maxans_seed = 601815180 | maxans = 148561 | maxans_gamma = 0.99990000000000001101 | maxans_min_gamma = 4.00000000000000008369e-08 |
+
+filename=/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/p9_t67_parallel.cpp,kPackSize=8
+Starting 8 threads
+Starting 8 threads
+Starting 3 threads
+| maxans_seed = 199989828 | maxans = 148561 | maxans_gamma = 0.84999999999999997780 | maxans_min_gamma = 9.99999999999999954748e-08 |
+
+filename=/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/p9_t67_parallel.cpp,kPackSize=12
+Starting 12 threads
+Starting 7 threads
+| maxans_seed = 2655001860 | maxans = 148561 | maxans_gamma = 0.84999999999999997780 | maxans_min_gamma = 2.99999999999999973190e-08 |
