@@ -70,7 +70,7 @@ using i128 = __int128_t;
 // Test 7
 inline constexpr size_t n        = 4;
 inline constexpr size_t m        = 4;
-inline constexpr size_t kMaxW    = 149041;
+inline constexpr u32 kMaxW       = 149041;
 inline constexpr array<i32, 5> p = {1, 16, 256, 4096, 65536};
 
 enum class Engine : u32 {
@@ -307,8 +307,9 @@ int main() {
                                                  0.99999999999999,
                                                  0.999999999999999}>();
 
+    const auto sc = best_result.max_ans_min_gamma / kMaxW;
     printf("| maxans_seed = %" PRIuFAST32 " | maxans = %" PRId64
-           " | maxans_gamma = %.20lf | maxans_min_gamma = %.20e |\n",
+           " | maxans_gamma = %.20lf | maxans_min_gamma = %.20e | potential_score = %.20lf |\n",
            best_result.max_ans_seed, best_result.max_ans, best_result.max_ans_gamma,
-           best_result.max_ans_min_gamma);
+           best_result.max_ans_min_gamma, sc * sc);
 }
