@@ -13,6 +13,7 @@
 #include <cstring>
 #include <ctime>
 #include <deque>
+#include <fstream>
 #include <functional>
 #include <future>
 #include <iomanip>
@@ -61,16 +62,16 @@ using i128 = __int128_t;
 // inline constexpr array<i32, 5> p = {1, 2, 3, 4, 5};
 
 // Test 6
-inline constexpr size_t n        = 3;
-inline constexpr size_t m        = 3;
-inline constexpr size_t kMaxW    = 7633;
-inline constexpr array<i32, 5> p = {1, 9, 81, 729, 6561};
+// inline constexpr size_t n        = 3;
+// inline constexpr size_t m        = 3;
+// inline constexpr size_t kMaxW    = 7633;
+// inline constexpr array<i32, 5> p = {1, 9, 81, 729, 6561};
 
 // Test 7
-// inline constexpr size_t n        = 4;
-// inline constexpr size_t m        = 4;
-// inline constexpr size_t kMaxW    = 149041;
-// inline constexpr array<i32, 5> p = {1, 16, 256, 4096, 65536};
+inline constexpr size_t n        = 4;
+inline constexpr size_t m        = 4;
+inline constexpr size_t kMaxW    = 149041;
+inline constexpr array<i32, 5> p = {1, 16, 256, 4096, 65536};
 
 enum class Engine : u32 {
     kFirst,
@@ -153,11 +154,33 @@ struct SearchResult final {
     }
 };
 
+static uint64_t get_seed_fallback() noexcept {
+    fprintf(stderr, "Calling %s\n", std::source_location::current().function_name());
+    return u32(rand()) ^ uint64_t(time(nullptr));
+}
+
+static uint64_t get_seed() noexcept {
+    try {
+        std::ifstream fin("/dev/urandom", std::ios::in | std::ios::binary);
+        if (!fin || !fin.is_open()) {
+            return get_seed_fallback();
+        }
+        uint64_t useed{};
+        char* ptr = reinterpret_cast<char*>(&useed);
+        fin.read(ptr, sizeof(useed));
+        return fin ? useed : get_seed_fallback();
+    } catch (const std::exception& ex) {
+        fprintf(stderr, "Exception: %s\n", ex.what());
+        return get_seed_fallback();
+    } catch (...) {
+        return get_seed_fallback();
+    }
+}
+
 template <flt TGammaValue>
     requires(0 < TGammaValue && TGammaValue < 1)
 static SearchResult runner() noexcept {
-    const auto initialseed = uint_fast32_t(u32(rand())) ^ uint_fast32_t(time(nullptr));
-    rnd_t rnd{initialseed};
+    rnd_t rnd{uint_fast32_t(get_seed())};
 
     i64 max_ans                = -1;
     uint_fast32_t max_ans_seed = 0;
@@ -186,7 +209,7 @@ static SearchResult runner() noexcept {
     };
 }
 
-inline constexpr std::size_t kPackSize = 14;
+inline constexpr std::size_t kPackSize = 12;
 using ThreadHandleContainer            = std::array<std::future<SearchResult>, kPackSize>;
 
 // template <flt TGammaValue, flt... TGammaValues>
@@ -198,7 +221,7 @@ using ThreadHandleContainer            = std::array<std::future<SearchResult>, k
 // }
 
 template <std::size_t I, std::size_t Offset, std::array TGammaValues>
-ATTRIBUTE_ALWAYS_INLINE static std::size_t start_runners(ThreadHandleContainer& thread_handles) {
+static std::size_t start_runners(ThreadHandleContainer& thread_handles) {
     if constexpr (I < kPackSize && Offset + I < std::size(TGammaValues)) {
         thread_handles[I] = std::async(std::launch::async, &runner<TGammaValues[Offset + I]>);
         return start_runners<I + 1, Offset, TGammaValues>(thread_handles);
@@ -208,7 +231,7 @@ ATTRIBUTE_ALWAYS_INLINE static std::size_t start_runners(ThreadHandleContainer& 
 }
 
 template <std::size_t Offset, std::array TGammaValues>
-ATTRIBUTE_ALWAYS_INLINE static SearchResult gsolve_impl() {
+static SearchResult gsolve_impl() {
     SearchResult best_result{};
 
     {
@@ -247,7 +270,14 @@ int main() {
     srand(u32(time(nullptr)));
     printf("filename=%s,kPackSize=%zu\n", std::source_location::current().file_name(), kPackSize);
 
-    SearchResult best_result = gsolve<std::array{0.73,
+    SearchResult best_result = gsolve<std::array{0.6,
+                                                 0.61,
+                                                 0.63,
+                                                 0.65,
+                                                 0.67,
+                                                 0.69,
+                                                 0.7,
+                                                 0.73,
                                                  0.74,
                                                  0.75,
                                                  0.76,
@@ -261,6 +291,7 @@ int main() {
                                                  0.9,
                                                  0.92,
                                                  0.95,
+                                                 0.97,
                                                  0.99,
                                                  0.999,
                                                  0.9999,
