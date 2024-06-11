@@ -1,9 +1,13 @@
 #include <algorithm>
 #include <array>
 #include <cassert>
+#include <cstddef>
+#include <cstdint>
 #include <fstream>
 #include <iostream>
 #include <vector>
+
+using std::uint32_t, std::size_t;
 
 struct Action {
     constexpr Action() noexcept = default;
@@ -15,24 +19,29 @@ struct Action {
 };
 
 struct Task {
-    void Read(const std::string& filename) {
+    static Task Read(const std::string& filename) {
         std::ifstream fin(filename);
         assert(fin.is_open());
-        Read(fin);
+        return Read(fin);
     }
 
-    void Read(std::istream& in = std::cin) {
-        in >> test;
+    static Task Read(std::istream& in = std::cin) {
+        if (!in) {
+            throw std::runtime_error("bad istream");
+        }
+        Task t;
+        in >> t.test;
         if (!in) {
             throw std::runtime_error("test number");
         }
-        in >> n >> m >> wmax;
+        in >> t.n >> t.m >> t.wmax;
         if (!in) {
             throw std::runtime_error("n m wmax");
         }
-        for (auto& p_i : p) {
+        for (auto& p_i : t.p) {
             in >> p_i;
         }
+        return t;
     }
 
     // Returns -1 if sequence of actions is invalid or too big
@@ -116,22 +125,56 @@ struct Task {
     std::array<int, 5> p{};
 };
 
-int main() {
+void sample() {
     double total_points = 0;
     for (unsigned test = 1; test <= 10; test++) {
-        Task task;
-        task.Read("tests/input" + std::to_string(test) + ".txt");
+        Task task = Task::Read("tests/input" + std::to_string(test) + ".txt");
         std::vector<Action> solution;
-        solution.reserve(size_t(task.n * task.m));
+        solution.reserve(std::size_t(task.n * task.m));
         for (int i = 0; i < task.n; i++) {
             for (int j = 0; j < task.m; j++) {
                 solution.emplace_back(i + 1, j + 1, 0);
             }
         }
         double test_points = task.PrintSolution(solution, "output" + std::to_string(test) + ".txt");
-        printf("Test %d: %.4f points\n", test, test_points);
+        printf("Test %u: %.4f points\n", test, test_points);
         total_points += test_points;
     }
     printf("Total: %.4f points\n", total_points);
+}
+
+void read_tests() {
+    for (auto test : {1u, 3u, 5u, 6u}) {
+        const auto test_str = std::to_string(test);
+
+        std::ifstream fin("solve/output" + test_str + ".txt");
+        int w{};
+        uint32_t k{};
+        fin >> w >> k;
+        if (!fin) {
+            std::cerr << "bad test " + test_str + "\n";
+            return;
+        }
+
+        std::vector<Action> solution(k);
+        for (size_t i = 0; i < k; i++) {
+            if (!fin) {
+                std::cerr << "bad test " + test_str + " | k = " + std::to_string(k) + "\n";
+                return;
+            }
+            Action& act = solution[i];
+            fin >> act.x >> act.y >> act.t;
+        }
+
+        Task t     = Task::Read("tests/input" + test_str + ".txt");
+        int real_w = t.Evaluate(solution);
+        std::cout << "Test: " + test_str << " | real_w = " << real_w << " | w = " << w
+                  << " | wmax = " << t.wmax << " | score = " << t.Score(real_w) << '\n';
+    }
+}
+
+int main() {
+    // sample();
+    read_tests();
     return 0;
 }
