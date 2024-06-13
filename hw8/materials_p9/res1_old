@@ -2045,3 +2045,496 @@ initialseed=1192276702,kUseMt19937=1
 initialseed=905851465,kUseMt19937=1
 | maxmaxans_seed = 3806129335 | 72 | 0.94999999999999995559 | 6.9999999999999998156e-09 |
 p=std::exp(delta / t_k)
+
+filename=/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/p9_parallel.cpp,kPackSize=16,kUseDownEngineHeuristic=1,kFirstDownBoundary=0.5,kSecondDownBoundary=0.1
+Total: 48 gamma values
+Starting 16 threads
+Starting 16 threads
+Starting 16 threads
+| maxans_seed = 3952089318 | maxans = 79 | maxans_gamma = 0.45000000000000001110 | maxans_min_gamma = 5.99999999999999996010e-09 | potential_score = 0.86380622837370246714 |
+
+filename=/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/p9_parallel.cpp,kPackSize=16,kUseDownEngineHeuristic=1
+Total: 57 gamma values
+Starting 16 threads
+Starting 16 threads
+Starting 16 threads
+Starting 9 threads
+| maxans_seed = 1593041216 | maxans = 79 | maxans_gamma = 0.96999999999999997335 | maxans_min_gamma = 5.00000000000000010408e-04 | potential_score = 0.86380622837370246714 |
+
+filename=/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/p9_parallel.cpp,kPackSize=16,kUseDownEngineHeuristic=1,kFirstDownBoundary=0.500000,kSecondDownBoundary=0.200000,kThirdDownBoundary=0.100000
+Total: 57 gamma values
+Starting 15 threads
+| maxans_seed = 554827962 | maxans = 78 | maxans_gamma = 0.40000000000000002220 | maxans_min_gamma = 9.99999999999999954748e-08 | potential_score = 0.84207612456747393814 |
+
+filename=/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/p9_parallel.cpp,kPackSize=16,kUseDownEngineHeuristic=1,kFirstDownBoundary=0.500000,kSecondDownBoundary=0.200000,kThirdDownBoundary=0.100000
+Total: 57 gamma values
+Starting 15 threads
+| maxans_seed = 747229080 | maxans = 78 | maxans_gamma = 0.44000000000000000222 | maxans_min_gamma = 1.00000000000000008180e-05 | potential_score = 0.84207612456747393814 |
+
+filename=/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/p9_parallel.cpp,kPackSize=16,kUseDownEngineHeuristic=1,kFirstDownBoundary=0.500000,kSecondDownBoundary=0.200000,kThirdDownBoundary=0.100000
+Total: 63 gamma values
+Starting 16 threads
+| maxans_seed = 3472238894 | maxans = 78 | maxans_gamma = 0.80000000000000004441 | maxans_min_gamma = 1.00000000000000004792e-04 | potential_score = 0.84207612456747393814 |
+
+filename=/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/p9_parallel.cpp,kPackSize=16,kUseDownEngineHeuristic=1,kFirstDownBoundary=0.500000,kSecondDownBoundary=0.200000,kThirdDownBoundary=0.100000,kTotalIters=400
+Total: 64 gamma values
+Starting 16 threads
+| maxans_seed = 923955578 | maxans = 80 | maxans_gamma = 0.35999999999999998668 | maxans_min_gamma = 1.00000000000000008180e-05 | potential_score = 0.88581314878892736253 |
+
+filename=/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/p9_parallel.cpp
+kTotalIters=20000
+kPackSize=16
+kUseDownEngineHeuristic=1
+kFirstDownBoundary=0.500000
+kSecondDownBoundary=0.200000
+kThirdDownBoundary=0.100000
+Total: 70 gamma values
+Starting 14 threads
+| maxans_seed = 1230276257 | maxans = 80 | maxans_gamma = 0.75000000000000000000 | maxans_min_gamma = 4.00000000000000024913e-09 | potential_score = 0.88581314878892736253 |
+
+filename=/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/p9_parallel.cpp
+kTotalIters=20000
+kPackSize=16
+kUseDownEngineHeuristic=1
+kFirstDownBoundary=0.500000
+kSecondDownBoundary=0.200000
+kThirdDownBoundary=0.100000
+Total: 80 gamma values
+Starting 16 threads
+maxans_seed = 4245871793
+max_ans = 79
+maxans_gamma = 0.99990000000000001101
+maxans_min_gamma = 5.00000000000000010461e-09
+potential_score = 0.86380622837370246714
+max_ans_iter = 12613
+
+kTotalIters=30000
+kPackSize=16
+kUseDownEngineHeuristic=1
+kSecondDownBoundary=0.200000
+kThirdDownBoundary=0.100000
+Total: 80 gamma values
+Starting 16 threads
+maxans_seed = 1176716673
+max_ans = 79
+maxans_gamma = 0.68000000000000004885
+maxans_min_gamma = 5.99999999999999996010e-09
+potential_score = 0.86380622837370246714
+max_ans_iter = 29747
+max_ans_first_down_boundary = 0.700000
+
+filename=/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/p9_parallel.cpp
+kTotalIters=30000
+kPackSize=16
+kUseDownEngineHeuristic=1
+kSecondDownBoundary=0.200000
+kThirdDownBoundary=0.100000
+Total: 80 gamma values
+Starting 16 threads
+maxans_seed = 4211698171
+max_ans = 79
+maxans_gamma = 0.40999999999999997558
+maxans_min_gamma = 5.99999999999999996010e-09
+potential_score = 0.86380622837370246714
+max_ans_iter = 29746
+max_ans_first_down_boundary = 0.700000
+
+filename=/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/p9_parallel.cpp
+kTotalIters=1000
+kPackSize=16
+kUseDownEngineHeuristic=1
+kSecondDownBoundary=0.200000
+kThirdDownBoundary=0.100000
+Total: 80 gamma values
+Starting 16 threads
+maxans_seed = 4242367986
+max_ans = 79
+maxans_gamma = 0.99899999999999999911
+maxans_min_gamma = 5.00000000000000010408e-04
+potential_score = 0.86380622837370246714
+max_ans_iter = 204
+max_ans_first_down_boundary = 0.500000
+
+filename=/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/p9_parallel.cpp
+kTotalIters=1000
+kPackSize=16
+kUseDownEngineHeuristic=1
+kSecondDownBoundary=0.200000
+kThirdDownBoundary=0.100000
+Total: 80 gamma values
+Starting 16 threads
+maxans_seed = 2242562760
+max_ans = 78
+maxans_gamma = 0.22000000000000000111
+maxans_min_gamma = 3.00000000000000007600e-05
+potential_score = 0.84207612456747393814
+max_ans_iter = 766
+max_ans_first_down_boundary = 0.500000
+
+filename=/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/p9_parallel.cpp
+kTotalIters=1000
+kPackSize=16
+kUseDownEngineHeuristic=1
+kSecondDownBoundary=0.200000
+kThirdDownBoundary=0.100000
+Total: 80 gamma values
+Starting 16 threads
+maxans_seed = 931851581
+max_ans = 79
+maxans_gamma = 0.65000000000000002220
+maxans_min_gamma = 5.99999999999999996010e-09
+potential_score = 0.86380622837370246714
+max_ans_iter = 766
+max_ans_first_down_boundary = 0.700000
+
+filename=/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/p9_parallel.cpp
+kTotalIters=1000
+kPackSize=16
+kUseDownEngineHeuristic=1
+kSecondDownBoundary=0.200000
+kThirdDownBoundary=0.100000
+Total: 80 gamma values
+Starting 16 threads
+maxans_seed = 699142649
+max_ans = 80
+maxans_gamma = 0.47999999999999998224
+maxans_min_gamma = 5.00000000000000040902e-06
+potential_score = 0.88581314878892736253
+max_ans_iter = 810
+max_ans_first_down_boundary = 0.400000
+
+filename=/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/p9_parallel.cpp
+kTotalIters=1000
+kPackSize=16
+kUseDownEngineHeuristic=1
+kSecondDownBoundary=0.200000
+kThirdDownBoundary=0.100000
+Total: 80 gamma values
+Starting 16 threads
+maxans_seed = 300722108
+max_ans = 80
+maxans_gamma = 0.56000000000000005329
+maxans_min_gamma = 5.00000000000000040902e-06
+potential_score = 0.88581314878892736253
+max_ans_iter = 100
+max_ans_first_down_boundary = 0.400000
+
+filename=/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/p9_parallel.cpp
+kTotalIters=1000
+kPackSize=16
+kUseDownEngineHeuristic=1
+kSecondDownBoundary=0.200000
+kThirdDownBoundary=0.100000
+Total: 80 gamma values
+Starting 16 threads
+maxans_seed = 3756322305
+max_ans = 78
+maxans_gamma = 0.35999999999999998668
+maxans_min_gamma = 5.00000000000000040902e-06
+potential_score = 0.84207612456747393814
+max_ans_iter = 154
+max_ans_first_down_boundary = 0.400000
+filename=/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/p9_parallel.cpp
+kTotalIters=1000
+kPackSize=16
+kUseDownEngineHeuristic=1
+kSecondDownBoundary=0.200000
+kThirdDownBoundary=0.100000
+Total: 80 gamma values
+Starting 16 threads
+maxans_seed = 1237713832
+max_ans = 78
+maxans_gamma = 0.41999999999999998446
+maxans_min_gamma = 2.99999999999999973190e-08
+potential_score = 0.84207612456747393814
+max_ans_iter = 146
+max_ans_first_down_boundary = 0.500000
+
+filename=/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/p9_parallel.cpp
+kTotalIters=500
+kPackSize=16
+kUseDownEngineHeuristic=1
+kSecondDownBoundary=0.200000
+kThirdDownBoundary=0.100000
+Total: 80 gamma values
+Starting 16 threads
+maxans_seed = 280198882
+max_ans = 78
+maxans_gamma = 0.67000000000000003997
+maxans_min_gamma = 5.00000000000000040902e-06
+potential_score = 0.84207612456747393814
+max_ans_iter = 180
+max_ans_first_down_boundary = 0.500000
+
+filename=/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/p9_parallel.cpp
+kTotalIters=500
+kPackSize=16
+kUseDownEngineHeuristic=1
+kSecondDownBoundary=0.200000
+kThirdDownBoundary=0.100000
+Total: 80 gamma values
+Starting 16 threads
+maxans_seed = 1746577299
+max_ans = 80
+maxans_gamma = 0.92000000000000003997
+maxans_min_gamma = 1.00000000000000002092e-08
+potential_score = 0.88581314878892736253
+max_ans_iter = 279
+max_ans_first_down_boundary = 0.700000
+
+filename=/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/p9_parallel.cpp
+kTotalIters=500
+kPackSize=16
+kUseDownEngineHeuristic=1
+kSecondDownBoundary=0.200000
+kThirdDownBoundary=0.100000
+Total: 80 gamma values
+Starting 16 threads
+maxans_seed = 927170478
+max_ans = 80
+maxans_gamma = 0.96999999999999997335
+maxans_min_gamma = 1.00000000000000002092e-08
+potential_score = 0.88581314878892736253
+max_ans_iter = 187
+max_ans_first_down_boundary = 0.800000
+
+filename=/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/p9_parallel.cpp
+kTotalIters=1000
+kPackSize=16
+kUseDownEngineHeuristic=1
+kSecondDownBoundary=0.200000
+kThirdDownBoundary=0.100000
+Total: 80 gamma values
+Starting 16 threads
+maxans_seed = 2074387108
+max_ans = 80
+maxans_gamma = 0.56999999999999995115
+maxans_min_gamma = 4.99999999999999977374e-08
+potential_score = 0.88581314878892736253
+max_ans_iter = 213
+max_ans_first_down_boundary = 0.800000
+
+
+filename=/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/p9_parallel.cpp
+kTotalIters=1000
+kPackSize=16
+kUseDownEngineHeuristic=1
+kSecondDownBoundary=0.200000
+kThirdDownBoundary=0.100000
+kTopKBestResults=10
+
+Total: 80 gamma values
+Starting 16 threads
+max_ans = 80
+potential_score = 0.88581314878892736253
+
+solution number = 1:
+    maxans_seed = 3365039095
+    max_ans_gamma = 0.50000000000000000000
+    max_ans_min_gamma = 2.99999999999999973190e-08
+    max_ans_iter = 256
+    max_ans_first_down_boundary = 0.800000
+solution number = 2:
+    maxans_seed = 3222645192
+    max_ans_gamma = 0.56999999999999995115
+    max_ans_min_gamma = 5.00000000000000010408e-04
+    max_ans_iter = 396
+    max_ans_first_down_boundary = 0.700000
+solution number = 3:
+    maxans_seed = 509378773
+    max_ans_gamma = 0.53000000000000002665
+    max_ans_min_gamma = 1.00000000000000006228e-09
+    max_ans_iter = 486
+    max_ans_first_down_boundary = 0.700000
+solution number = 4:
+    maxans_seed = 3754730074
+    max_ans_gamma = 0.82999999999999996003
+    max_ans_min_gamma = 5.00000000000000031141e-10
+    max_ans_iter = 901
+    max_ans_first_down_boundary = 0.800000
+
+filename=/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/p9_parallel.cpp
+kTotalIters=1000
+kPackSize=16
+kUseDownEngineHeuristic=1
+kSecondDownBoundary=0.200000
+kThirdDownBoundary=0.100000
+kTopKBestResults=10
+
+Total: 80 gamma values
+Starting 16 threads
+max_ans = 80
+potential_score = 0.88581314878892736253
+
+solution number = 1:
+    maxans_seed = 2081053247
+    max_ans_gamma = 0.22000000000000000111
+    max_ans_min_gamma = 5.99999999999999996010e-09
+    max_ans_iter = 670
+    max_ans_first_down_boundary = 0.900000
+solution number = 2:
+    maxans_seed = 3448155760
+    max_ans_gamma = 0.16000000000000000333
+    max_ans_min_gamma = 1.00000000000000006228e-09
+    max_ans_iter = 787
+    max_ans_first_down_boundary = 0.800000
+solution number = 3:
+    maxans_seed = 3884307014
+    max_ans_gamma = 0.28999999999999998002
+    max_ans_min_gamma = 5.00000000000000040902e-06
+    max_ans_iter = 347
+    max_ans_first_down_boundary = 0.800000
+solution number = 4:
+    maxans_seed = 185428070
+    max_ans_gamma = 0.38000000000000000444
+    max_ans_min_gamma = 1.00000000000000006228e-09
+    max_ans_iter = 290
+    max_ans_first_down_boundary = 0.600000
+solution number = 5:
+    maxans_seed = 837080785
+    max_ans_gamma = 0.51000000000000000888
+    max_ans_min_gamma = 1.00000000000000002092e-08
+    max_ans_iter = 237
+    max_ans_first_down_boundary = 0.600000
+
+filename=/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/p9_parallel.cpp
+kTotalIters=1000
+kPackSize=16
+kUseDownEngineHeuristic=1
+kSecondDownBoundary=0.200000
+kThirdDownBoundary=0.100000
+kTopKBestResults=10
+
+Total: 80 gamma values
+Starting 16 threads
+max_ans = 80
+potential_score = 0.88581314878892736253
+
+solution number = 1:
+    maxans_seed = 71810443
+    max_ans_gamma = 0.25000000000000000000
+    max_ans_min_gamma = 4.00000000000000008369e-08
+    max_ans_iter = 376
+    max_ans_first_down_boundary = 0.700000
+solution number = 2:
+    maxans_seed = 3327904091
+    max_ans_gamma = 0.46999999999999997335
+    max_ans_min_gamma = 4.99999999999999977374e-08
+    max_ans_iter = 321
+    max_ans_first_down_boundary = 0.800000
+solution number = 3:
+    maxans_seed = 2101139763
+    max_ans_gamma = 0.60999999999999998668
+    max_ans_min_gamma = 1.00000000000000004792e-04
+    max_ans_iter = 189
+    max_ans_first_down_boundary = 0.700000
+
+filename=/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/p9_parallel_bfs.cpp
+kTotalIters=200
+kPackSize=16
+kUseDownEngineHeuristic=1
+kSecondDownBoundary=0.200000
+kThirdDownBoundary=0.100000
+kTopKBestResults=10
+kMaxQueueSize=1000000
+
+Total: 16 gamma values
+Starting 16 threads
+max_ans = 77
+potential_score = 0.82062283737024221963
+
+solution number = 1:
+    maxans_seed = 3698904721
+    max_ans_gamma = 0.30999999999999999778
+    max_ans_min_gamma = 4.99999999999999977374e-08
+    max_ans_iter = 60
+    max_ans_first_down_boundary = 0.700000
+solution number = 2:
+    maxans_seed = 735542754
+    max_ans_gamma = 0.32000000000000000666
+    max_ans_min_gamma = 1.00000000000000008180e-05
+    max_ans_iter = 71
+    max_ans_first_down_boundary = 0.700000
+solution number = 3:
+    maxans_seed = 997852902
+    max_ans_gamma = 0.34000000000000002442
+    max_ans_min_gamma = 5.00000000000000010408e-04
+    max_ans_iter = 67
+    max_ans_first_down_boundary = 0.700000
+solution number = 4:
+    maxans_seed = 3205754635
+    max_ans_gamma = 0.60999999999999998668
+    max_ans_min_gamma = 5.00000000000000010461e-09
+    max_ans_iter = 59
+    max_ans_first_down_boundary = 0.700000
+solution number = 5:
+    maxans_seed = 2033375804
+    max_ans_gamma = 0.67000000000000003997
+    max_ans_min_gamma = 4.99999999999999977374e-08
+    max_ans_iter = 60
+    max_ans_first_down_boundary = 0.700000
+solution number = 6:
+    maxans_seed = 4088298001
+    max_ans_gamma = 0.98999999999999999112
+    max_ans_min_gamma = 3.00000000000000007600e-05
+    max_ans_iter = 61
+    max_ans_first_down_boundary = 0.700000
+solution number = 7:
+    maxans_seed = 3970516321
+    max_ans_gamma = 0.99990000000000001101
+    max_ans_min_gamma = 1.00000000000000004792e-04
+    max_ans_iter = 69
+    max_ans_first_down_boundary = 0.700000
+solution number = 8:
+    maxans_seed = 1741438353
+    max_ans_gamma = 0.99999000000000004551
+    max_ans_min_gamma = 4.00000000000000008369e-08
+    max_ans_iter = 58
+    max_ans_first_down_boundary = 0.700000
+
+filename=/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/p9_parallel.cpp
+kTotalIters=1000
+kPackSize=16
+kUseDownEngineHeuristic=1
+kTopKBestResults=10
+
+Total: 80 gamma values
+Starting 16 threads
+max_ans = 81
+potential_score = 0.90809688581314873534
+
+solution number = 1:
+    maxans_seed = 1301171889
+    max_ans_gamma = 0.59999999999999997780
+    max_ans_min_gamma = 4.00000000000000008369e-08
+    max_ans_iter = 244
+    max_ans_first_down_boundary = 0.700000
+    max_ans_second_down_boundary = 0.400000
+    max_ans_third_down_boundary = 0.100000
+
+filename=/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/p9_parallel.cpp
+kTotalIters=1000
+kPackSize=16
+kUseDownEngineHeuristic=1
+kTopKBestResults=10
+gamma_values_size = 80
+started_threads = 16
+max_ans = 81
+potential_score = 0.90809688581314873534
+
+solution number = 1:
+    maxans_seed = 1803134676
+    max_ans_gamma = 0.25000000000000000000
+    max_ans_min_gamma = 1.00000000000000006228e-09
+    max_ans_iter = 499
+    max_ans_first_down_boundary = 0.800000
+    max_ans_second_down_boundary = 0.300000
+    max_ans_third_down_boundary = 0.400000
+solution number = 2:
+    maxans_seed = 3977600187
+    max_ans_gamma = 0.65000000000000002220
+    max_ans_min_gamma = 5.00000000000000040902e-06
+    max_ans_iter = 207
+    max_ans_first_down_boundary = 0.700000
+    max_ans_second_down_boundary = 0.200000
+    max_ans_third_down_boundary = 0.100000

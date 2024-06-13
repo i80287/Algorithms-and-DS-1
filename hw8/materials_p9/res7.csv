@@ -27,3 +27,31 @@ Starting 12 threads
 Starting 12 threads
 Starting 12 threads
 | maxans_seed = 1330751211 | maxans = 148801 | maxans_gamma = 0.75000000000000000000 | maxans_min_gamma = 1.00000000000000008180e-05 |
+
+filename=/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/p9_t67_parallel.cpp,kPackSize=12
+Total: 36 gamma values
+Starting 12 threads
+Starting 12 threads
+Starting 12 threads
+| maxans_seed = 4107872431 | maxans = 148801 | maxans_gamma = 0.82999999999999996003 | maxans_min_gamma = 8.99999999999999952656e-09 | potential_score = 0.99678200274311701268 |
+
+filename=/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/p9_t67_parallel.cpp,kPackSize=12
+Total: 36 gamma values
+Starting 12 threads
+Starting 12 threads
+Starting 12 threads
+| maxans_seed = 1325058232 | maxans = 148801 | maxans_gamma = 0.68999999999999994671 | maxans_min_gamma = 1.00000000000000002082e-03 | potential_score = 0.99678200274311701268 |
+
+filename=/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/p9_t67_parallel.cpp,kPackSize=16,kUseDownEngineHeuristic=1
+Total: 48 gamma values
+Starting 16 threads
+Starting 16 threads
+Starting 16 threads
+| maxans_seed = 539786038 | maxans = 149026 | maxans_gamma = 0.65000000000000002220 | maxans_min_gamma = 2.00000000000000004185e-08 | potential_score = 0.99979872323489316077 |
+
+filename=/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/p9_t67_parallel.cpp,kPackSize=16,kUseDownEngineHeuristic=1
+Total: 48 gamma values
+Starting 16 threads
+Starting 16 threads
+Starting 16 threads
+| maxans_seed = 2930974558 | maxans = 149041 | maxans_gamma = 0.63000000000000000444 | maxans_min_gamma = 1.00000000000000004792e-04 | potential_score = 1.00000000000000000000 |

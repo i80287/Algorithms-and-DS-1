@@ -144,7 +144,8 @@ void sample() {
 }
 
 void read_tests() {
-    for (auto test : {1u, 3u, 5u, 6u}) {
+    double total_score = 0;
+    for (auto test : {1u, 2u, 3u, 4u, 5u, 6u, 7u, 8u, 9u, 10u}) {
         const auto test_str = std::to_string(test);
 
         std::ifstream fin("solve/output" + test_str + ".txt");
@@ -168,9 +169,15 @@ void read_tests() {
 
         Task t     = Task::Read("tests/input" + test_str + ".txt");
         int real_w = t.Evaluate(solution);
+        auto score = t.Score(real_w);
+        if (w != real_w) {
+            score = 0;
+        }
         std::cout << "Test: " + test_str << " | real_w = " << real_w << " | w = " << w
-                  << " | wmax = " << t.wmax << " | score = " << t.Score(real_w) << '\n';
+                  << " | wmax = " << t.wmax << " | score = " << score << '\n';
+        total_score += score;
     }
+    std::cout << "Total score: " << total_score << '\n';
 }
 
 int main() {
