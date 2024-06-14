@@ -106,7 +106,9 @@ constexpr bool correct_engine(Engine e) noexcept {
 }
 
 using flt                                     = double;
-inline constexpr u32 kTotalIters              = 700;  // u64(5e5);
+inline constexpr u32 kBlockSize = 4;
+inline constexpr u32 kBlockStep = 1;
+inline constexpr u32 kTotalIters              = kBlockSize * kBlockSize * 16;  // u64(5e5);
 inline constexpr bool kUseDownEngineHeuristic = true;
 inline constexpr u32 kItersPerCombination     = 64;
 inline constexpr std::size_t kTopKBestResults = 12;
@@ -119,20 +121,24 @@ using rnd_t = mt19937;
 
 inline constexpr std::array kMinGammaValues = {
     // 1e-3, 1e-4, 1e-5, 5e-6, 1e-6,
+
     5e-6, 1e-7, 5e-8, 3e-8, 2e-8, 1e-8, 9e-9,  8e-9,  7e-9,
     6e-9, 5e-9, 4e-9, 3e-9, 2e-9, 1e-9, 5e-10, 1e-10, 5e-11,
 };
 inline constexpr std::array kFirstDownBoundaryValues = {
     0.99, 0.95, 0.9, 0.85, 0.8, 0.77, 0.75, 0.73, 0.7, 0.67, 0.6, 0.5,
+
     //  0.4,  0.3
     // , -1.0
 };
 inline constexpr std::array kSecondDownBoundaryValues = {
     0.55, 0.5, 0.4, 0.3, 0.2,
+
     // 0.1, 0.05, 0.001,
 };
 inline constexpr std::array kThirdDownBoundaryValues = {
     // 0.4,
+
     0.3,
     0.2,
     0.1,
@@ -140,71 +146,50 @@ inline constexpr std::array kThirdDownBoundaryValues = {
 };
 inline constexpr std::array kEngDownTempBoundaryValues = {
     // 1e-5, 1e-6, 1e-7,
+
     1e-8, 1e-9, 1e-10, 1e-11, -1.0,
 };
 
 // #define USE_STATIC_STORAGE_FOR_DP
 // #define USE_MAX_ANS_PER_ITER_METRICS
 
-struct SolveResult {
-    i64 max_ans;
-    u32 max_ans_iters;
-#ifdef USE_MAX_ANS_PER_ITER_METRICS
-    u32 iters_2500_max_ans{};
-    u32 iters_5000_max_ans{};
-    u32 iters_20000_max_ans{};
-    u32 iters_40000_max_ans{};
-#endif
+struct SolveResult final {
+    u64 ans{};
+    u64 average_max_block_ans_iters{};
+};
+struct SolveBlockResult final {
+    u64 max_ans{};
+    u64 max_ans_iter{};
 };
 
-static SolveResult solve(const uint_fast32_t rndseed, const flt t_gamma, const flt min_gamma,
-                         const flt first_down_boundary, const flt second_down_boundary,
-                         const flt third_down_boundary, const flt eng_down_temp_boundary
-#ifdef USE_STATIC_STORAGE_FOR_DP
-                         ,
-                         array<array<Engine, m>, n>& dp
-#endif
-                         ) noexcept {
-    assert(0 < min_gamma && min_gamma < t_gamma && t_gamma < 1);
-
-    static_assert(int(Engine::kFirst) == 0);
-
-#ifdef USE_STATIC_STORAGE_FOR_DP
-    dp.fill(std::array<Engine, m>{});
-    // static_assert(sizeof(dp) > 8192);
-#else
-    array<array<Engine, m>, n> dp{};
-    // static_assert(sizeof(dp) <= 8192);
-#endif
-
-    i64 ans          = n * m * p[u32(Engine::kFirst)];
-    i64 max_ans      = ans;
+static SolveBlockResult find_optimum(std::array<std::array<Engine, m>, n>& dp, std::mt19937& rnd,
+                                     const u32 i0, const u32 j0, const flt t_gamma,
+                                     const flt min_gamma, const flt first_down_boundary,
+                                     const flt second_down_boundary, const flt third_down_boundary,
+                                     const flt eng_down_temp_boundary) noexcept {
+    assert(i0 + kBlockSize <= dp.size());
+    assert(j0 + kBlockSize <= dp[0].size());
+    double t_k = 1;
+    constexpr auto plocal(p);
+    u64 ans          = n * m * plocal[u32(Engine::kFirst)];
+    u64 max_ans      = ans;
     u32 max_ans_iter = 0;
-    rnd_t rnd{rndseed};
     uniform_real_distribution<double> dist(0, 1);
-    flt t_k = 1;
-#ifdef USE_MAX_ANS_PER_ITER_METRICS
-    u32 iters_2500_max_ans{};
-    u32 iters_5000_max_ans{};
-    u32 iters_20000_max_ans{};
-    u32 iters_40000_max_ans{};
-#endif
-
     for (u32 iters = 1; iters <= kTotalIters; t_k = max(t_k * t_gamma, min_gamma), iters++) {
-        const u32 i = rnd() % n;
-        const u32 j = rnd() % m;
+        const u32 i = i0 + u32(rnd() % kBlockSize);
+        const u32 j = j0 + u32(rnd() % kBlockSize);
 
         u32 mask = 0;
         if (i > 0) {
             mask |= 1u << u32(dp[i - 1][j]);
         }
-        if (i + 1 < n) {
+        if (i + 1 < kBlockSize) {
             mask |= 1u << u32(dp[i + 1][j]);
         }
         if (j > 0) {
             mask |= 1u << u32(dp[i][j - 1]);
         }
-        if (j + 1 < m) {
+        if (j + 1 < kBlockSize) {
             mask |= 1u << u32(dp[i][j + 1]);
         }
         Engine max_engine = Engine(std::countr_one(mask));
@@ -227,62 +212,148 @@ static SolveResult solve(const uint_fast32_t rndseed, const flt t_gamma, const f
             continue;
         }
 
-        const auto curr_power = p[u32(dp[i][j])];
-        const auto new_power  = p[u32(max_engine)];
-        const auto delta      = new_power - curr_power;
+        const auto curr_power = plocal[u32(dp[i][j])];
+        const auto new_power  = plocal[u32(max_engine)];
+        const i32 delta       = new_power - curr_power;
         if (delta >= 0 || dist(rnd) <= std::exp(delta / t_k)) {
             dp[i][j] = max_engine;
-            ans += delta;
+            ans += u64(i64(delta));
             if (ans > max_ans) {
                 max_ans      = ans;
                 max_ans_iter = iters;
             }
         }
-#ifdef USE_MAX_ANS_PER_ITER_METRICS
-        if (iters == 2500) [[unlikely]] {
-            iters_2500_max_ans = u32(max_ans);
-        }
-
-        if (iters == 5000) [[unlikely]] {
-            iters_5000_max_ans = u32(max_ans);
-        }
-        if (iters == 20000) [[unlikely]] {
-            iters_20000_max_ans = u32(max_ans);
-        }
-        if (iters == 40000) [[unlikely]] {
-            iters_40000_max_ans = u32(max_ans);
-        }
-#endif
     }
 
-    return {
-        .max_ans       = max_ans,
-        .max_ans_iters = max_ans_iter,
-#ifdef USE_MAX_ANS_PER_ITER_METRICS
-        .iters_2500_max_ans  = iters_2500_max_ans,
-        .iters_5000_max_ans  = iters_5000_max_ans,
-        .iters_20000_max_ans = iters_20000_max_ans,
-        .iters_40000_max_ans = iters_40000_max_ans,
+    return {.max_ans = max_ans, .max_ans_iter = max_ans_iter};
+}
+
+static void apply_optimum(u64 max_ans, std::array<std::array<Engine, m>, n>& dp, std::mt19937& rnd,
+                          const u32 i0, const u32 j0, const flt t_gamma, const flt min_gamma,
+                          const flt first_down_boundary, const flt second_down_boundary,
+                          const flt third_down_boundary,
+                          const flt eng_down_temp_boundary) noexcept {
+    double t_k = 1;
+    constexpr auto plocal(p);
+    u64 ans = n * m * plocal[u32(Engine::kFirst)];
+    uniform_real_distribution<double> dist(0, 1);
+    for (u32 iters = 1; iters <= kTotalIters; t_k = max(t_k * t_gamma, min_gamma), iters++) {
+        const u32 i = i0 + u32(rnd() % kBlockSize);
+        const u32 j = j0 + u32(rnd() % kBlockSize);
+
+        u32 mask = 0;
+        if (i > 0) {
+            mask |= 1u << u32(dp[i - 1][j]);
+        }
+        if (i + 1 < kBlockSize) {
+            mask |= 1u << u32(dp[i + 1][j]);
+        }
+        if (j > 0) {
+            mask |= 1u << u32(dp[i][j - 1]);
+        }
+        if (j + 1 < kBlockSize) {
+            mask |= 1u << u32(dp[i][j + 1]);
+        }
+        Engine max_engine = Engine(std::countr_one(mask));
+
+        if constexpr (kUseDownEngineHeuristic) {
+            if (max_engine > Engine::kFirst && t_k > eng_down_temp_boundary &&
+                dist(rnd) <= first_down_boundary) {
+                max_engine = Engine(u32(max_engine) - 1);
+                if (max_engine > Engine::kFirst && dist(rnd) <= second_down_boundary) {
+                    max_engine = Engine(u32(max_engine) - 1);
+                    if (max_engine > Engine::kFirst && dist(rnd) <= third_down_boundary) {
+                        max_engine = Engine(u32(max_engine) - 1);
+                    }
+                }
+            }
+        }
+
+        if (dp[i][j] == max_engine) {
+            continue;
+        }
+
+        const auto curr_power = plocal[u32(dp[i][j])];
+        const auto new_power  = plocal[u32(max_engine)];
+        const i32 delta       = new_power - curr_power;
+        if (delta >= 0 || dist(rnd) <= std::exp(delta / t_k)) {
+            dp[i][j] = max_engine;
+            ans += u64(i64(delta));
+            if (ans == max_ans) {
+                return;
+            }
+        }
+    }
+}
+
+static SolveResult solve(const uint_fast32_t rndseed, const flt t_gamma, const flt min_gamma,
+                         const flt first_down_boundary, const flt second_down_boundary,
+                         const flt third_down_boundary, const flt eng_down_temp_boundary
+#ifdef USE_STATIC_STORAGE_FOR_DP
+                         ,
+                         array<array<Engine, m>, n>& dp
 #endif
+                         ) noexcept {
+    assert(0 < min_gamma && min_gamma < t_gamma && t_gamma < 1);
+
+    static_assert(int(Engine::kFirst) == 0);
+
+#ifdef USE_STATIC_STORAGE_FOR_DP
+    dp.fill(std::array<Engine, m>{});
+#else
+    array<array<Engine, m>, n> dp{};
+#endif
+    array<array<Engine, kBlockSize>, kBlockSize> tmp_dp_block{};
+
+    std::ranlux24 seedgen{rndseed};
+    std::mt19937 rnd;
+    u64 sum_iters = 0;
+    u64 total     = 0;
+    for (u32 i0 = 0; i0 + kBlockSize <= n; i0 += kBlockStep) {
+        for (u32 j0 = 0; j0 + kBlockSize <= m; j0 += kBlockStep) {
+            for (u32 i = 0; i < kBlockSize; i++) {
+                std::copy_n(dp[i0 + i].cbegin() + j0, std::size_t(kBlockSize),
+                            tmp_dp_block[i].begin());
+            }
+            const uint_fast32_t seed = seedgen();
+            rnd.seed(seed);
+            const auto [max_ans, max_ans_iter] =
+                find_optimum(dp, rnd, i0, j0, t_gamma, min_gamma, first_down_boundary,
+                             second_down_boundary, third_down_boundary, eng_down_temp_boundary);
+            for (u32 i = 0; i < kBlockSize; i++) {
+                std::copy_n(tmp_dp_block[i].cbegin(), std::size_t(kBlockSize),
+                            dp[i0 + i].begin() + j0);
+            }
+            rnd.seed(seed);
+            apply_optimum(max_ans, dp, rnd, i0, j0, t_gamma, min_gamma, first_down_boundary,
+                          second_down_boundary, third_down_boundary, eng_down_temp_boundary);
+            sum_iters += max_ans_iter;
+            total++;
+        }
+    }
+
+    u64 ans = 0;
+    for (const auto& r : dp) {
+        for (const Engine e : r) {
+            ans += u32(p[u32(e)]);
+        }
+    }
+    return {
+        .ans                         = ans,
+        .average_max_block_ans_iters = sum_iters / total,
     };
 }
 
 struct SearchResult final {
-    i64 max_ans = -1;
+    u64 max_ans = 0;
     uint_fast32_t max_ans_seed{};
     flt max_ans_gamma{};
     flt max_ans_min_gamma{};
-    u32 max_ans_iter{};
+    u64 max_ans_iter{};
     flt max_ans_first_down_boundary{};
     flt max_ans_second_down_boundary{};
     flt max_ans_third_down_boundary{};
     flt eng_down_temp_boundary{};
-#ifdef USE_MAX_ANS_PER_ITER_METRICS
-    u32 iters_2500_max_ans{};
-    u32 iters_5000_max_ans{};
-    u32 iters_20000_max_ans{};
-    u32 iters_40000_max_ans{};
-#endif
 
     constexpr bool operator==(const SearchResult& other) const noexcept {
         return max_ans == other.max_ans;
@@ -324,7 +395,7 @@ static std::array<SearchResult, kTopKBestResults> runner(
     const std::array<flt, N> gamma_values) noexcept {
     rnd_t rnd{uint_fast32_t(get_seed())};
 
-    i64 max_ans = -1;
+    u64 max_ans = 0;
     std::array<SearchResult, kTopKBestResults> best_results{};
     std::size_t best_results_size = 0;
 
@@ -341,20 +412,15 @@ static std::array<SearchResult, kTopKBestResults> runner(
                         for (const flt third_down_boundary : kThirdDownBoundaryValues) {
                             for (const flt eng_down_temp_boundary : kEngDownTempBoundaryValues) {
                                 const auto rndseed = rnd();
-                                const auto [ans, ans_iter
-#ifdef USE_MAX_ANS_PER_ITER_METRICS
-                                            ,
-                                            iters_20000_max_ans, iters_40000_max_ans,
-                                            iters_2500_max_ans, iters_5000_max_ans
-#endif
-                                ] = solve(rndseed, gamma, min_gamma, first_down_boundary,
+                                const auto [ans, ans_iter] =
+                                    solve(rndseed, gamma, min_gamma, first_down_boundary,
                                           second_down_boundary, third_down_boundary,
                                           eng_down_temp_boundary
 #ifdef USE_STATIC_STORAGE_FOR_DP
                                           ,
                                           dp
 #endif
-                                );
+                                    );
                                 if (ans * 10 < max_ans * 9) {
                                     continue;
                                 }
@@ -376,12 +442,6 @@ static std::array<SearchResult, kTopKBestResults> runner(
                                     .max_ans_second_down_boundary = second_down_boundary,
                                     .max_ans_third_down_boundary  = third_down_boundary,
                                     .eng_down_temp_boundary       = eng_down_temp_boundary,
-#ifdef USE_MAX_ANS_PER_ITER_METRICS
-                                    .iters_2500_max_ans  = iters_2500_max_ans,
-                                    .iters_5000_max_ans  = iters_5000_max_ans,
-                                    .iters_20000_max_ans = iters_20000_max_ans,
-                                    .iters_40000_max_ans = iters_40000_max_ans,
-#endif
                                 };
                             }
                         }
@@ -432,7 +492,7 @@ static std::vector<SearchResult> gsolve(const std::array<flt, N>& gamma_values) 
     std::vector<SearchResult> best_results;
     constexpr std::size_t kMaxEntries = 8;
     best_results.reserve(std::max(kMaxEntries, started_threads_count * kTopKBestResults));
-    i64 best_ans = 0;
+    u64 best_ans = 0;
 
     for (u32 thread_num = 0; TFuture & handle_future : thread_handles) {
         thread_num++;
@@ -444,9 +504,9 @@ static std::vector<SearchResult> gsolve(const std::array<flt, N>& gamma_values) 
         }
         auto results_arr           = handle_future.get();
         const auto thread_best_ans = std::ranges::max_element(results_arr)->max_ans;
-        if (thread_best_ans < i64(i32(best_ans) * 0.9)) {
-            fprintf(stderr, "INFO: thread %u has result %" PRId64 " < %" PRId64 "\n", thread_num,
-                    thread_best_ans, i64(i32(best_ans) * 0.9));
+        if (thread_best_ans < u64(u32(best_ans) * 0.9)) {
+            fprintf(stderr, "INFO: thread %u has result %" PRIu64 " < %" PRIu64 "\n", thread_num,
+                    thread_best_ans, u64(u32(best_ans) * 0.9));
             continue;
         }
 
@@ -539,9 +599,9 @@ int main() {
             "    kSecondDownBoundaryValues = %s\n"
             "    kThirdDownBoundaryValues = %s\n"
             "    kEngDownTempBoundaryValues = %s\n"
-            "    solve(...) calls per gamma value = %zu\n", asctime(localtime(&start)),
-            std::source_location::current().file_name(), kTotalIters, kPackSize,
-            kItersPerCombination, kUseDownEngineHeuristic, kTopKBestResults, mgv.c_str(),
+            "    solve(...) calls per gamma value = %zu\n",
+            asctime(localtime(&start)), std::source_location::current().file_name(), kTotalIters,
+            kPackSize, kItersPerCombination, kUseDownEngineHeuristic, kTopKBestResults, mgv.c_str(),
             fdbv.c_str(), sdbv.c_str(), tdbv.c_str(), edtbv.c_str(),
             kItersPerCombination * kMinGammaValues.size() * kFirstDownBoundaryValues.size() *
                 kSecondDownBoundaryValues.size() * kThirdDownBoundaryValues.size() *
@@ -633,7 +693,7 @@ int main() {
     };
 
     auto best_results = gsolve(kGammaValues);
-    i64 max_ans       = std::ranges::max_element(best_results)->max_ans;
+    u64 max_ans       = std::ranges::max_element(best_results)->max_ans;
     auto sc           = flt(max_ans) / kMaxW;
     time_t end        = time(nullptr);
     assert(end != time_t(-1));
@@ -647,7 +707,7 @@ int main() {
 
     for (u32 sol_no = 0; const SearchResult& sr : best_results) {
         printf("    solution number = %" PRIu32 ":\n"
-               "        max_ans = %" PRId64 "\n"
+               "        max_ans = %" PRIu64 "\n"
                "        max_ans_seed = %" PRIuFAST32 "\n"
                "        max_ans_gamma = %.20lf\n"
                "        max_ans_min_gamma = %.20e\n"
@@ -655,7 +715,7 @@ int main() {
                "        max_ans_second_down_boundary = %lf\n"
                "        max_ans_third_down_boundary = %lf\n"
                "        eng_down_temp_boundary = %lf\n"
-               "        max_ans_iter = %u\n"
+               "        max_ans_iter = %" PRIu64 "\n"
 #ifdef USE_MAX_ANS_PER_ITER_METRICS
                "        iters_2500_max_ans = %u\n"
                "        iters_5000_max_ans = %u\n"
