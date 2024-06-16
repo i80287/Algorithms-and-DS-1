@@ -1,0 +1,3 @@
+/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/build/CMakeFiles/materials_p9.dir
+/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/build/CMakeFiles/edit_cache.dir
+/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/build/CMakeFiles/rebuild_cache.dir

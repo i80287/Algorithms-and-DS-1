@@ -48,7 +48,7 @@ using i32  = int32_t;
 using i64  = int64_t;
 using i128 = __int128_t;
 
-#define TEST_NUMBER 2
+#define TEST_NUMBER 1
 inline constexpr u32 kTestNumber = TEST_NUMBER;
 
 #if TEST_NUMBER == 1
@@ -107,7 +107,7 @@ public:
         row.fill(kInitialFillWithZeros ? Engine::kZero : kInvalidEngineSentinel);
         dp.fill(row);
         if constexpr (kInitialFillWithZeros) {
-            const auto total = dp.size() * dp[0].size();
+            const auto total = std::size(dp) * std::size(dp[0]);
             actions_.resize(total);
             w_       = total * p_[Engine::kZero];
             size_t i = 0;
@@ -196,7 +196,7 @@ private:
     vector<Action> actions_;
     std::array<std::array<Engine, m>, n> dp{};
 
-    static constexpr bool kInitialFillWithZeros    = false;
+    static constexpr bool kInitialFillWithZeros    = true;
     static constexpr Engine kInvalidEngineSentinel = Engine(u32(-1));
 
     constexpr void check_dp_cell_neighbours(u32 x, u32 y, Engine e) noexcept {
@@ -261,6 +261,8 @@ inline constexpr i32 kTotalIters = u64(1000000);
 using flt                        = double;
 using rnd_t                      = mt19937;
 
+inline constexpr u64 kUnknownMaxAns = std::numeric_limits<u64>::max();
+
 template <u64 MaxAns, bool kUseDownEngineHeuristic, bool kDPEqualPrecheck = false>
 static std::pair<u64, std::vector<Action>> solve(uint_fast32_t rndseed, const flt t_gamma,
                                                  const flt min_gamma,
@@ -281,6 +283,7 @@ static std::pair<u64, std::vector<Action>> solve(uint_fast32_t rndseed, const fl
     rnd_t rnd{rndseed};
     uniform_real_distribution<double> dist(0, 1);
     flt t_k = 1;
+    [[maybe_unused]] u64 max_ans{};
 
     for (u32 iters = 1; iters <= kTotalIters; t_k = max(t_k * t_gamma, min_gamma), iters++) {
         const u32 i = u32(rnd() % n);
@@ -311,37 +314,86 @@ static std::pair<u64, std::vector<Action>> solve(uint_fast32_t rndseed, const fl
         const auto delta      = new_power - curr_power;
         if (delta >= 0 || dist(rnd) <= std::exp(delta / t_k)) {
             dp(i, j, max_engine);
-            if (dp.w() == MaxAns) {
-                break;
+            if constexpr (MaxAns != kUnknownMaxAns) {
+                if (dp.w() == MaxAns) {
+                    break;
+                }
+            } else {
+                max_ans = std::max(max_ans, dp.w());
             }
         }
     }
 
-    return {dp.w(), std::move(std::move(dp).actions())};
+    if constexpr (MaxAns != kUnknownMaxAns) {
+        return {dp.w(), std::move(std::move(dp).actions())};
+    } else {
+        return {max_ans, {std::move(std::move(dp).actions())}};
+    }
+}
+
+static bool are_actions_correct(bool has_zero_coords, u64 w, std::span<const Action> ans) {
+    if (ans.size() > 500'000) {
+        return false;
+    }
+
+    array<std::bitset<m>, n> bitmap{};
+    array<array<Engine, m>, n> dp{};
+    const u32 shift = !has_zero_coords;
+    for (const auto [x, y, e] : ans) {
+        const u32 i = x - shift;
+        const u32 j = y - shift;
+        if (i >= n || j >= m) {
+            return false;
+        }
+        bitmap[i][j] = true;
+        dp[i][j]     = e;
+    }
+    const bool all_ones = std::ranges::all_of(
+        bitmap, [](const std::bitset<m>& row) constexpr noexcept { return row.all(); });
+    if (!all_ones) {
+        return false;
+    }
+
+    return w == std::accumulate(dp.cbegin(), dp.cend(), u32(),
+                                [](u32 cur_sum, const array<Engine, m>& row) constexpr noexcept {
+                                    return cur_sum +
+                                           std::accumulate(
+                                               row.cbegin(), row.cend(), u32(),
+                                               [](u32 cur_row_sum, Engine e) constexpr noexcept {
+                                                   return cur_row_sum + p[u32(e)];
+                                               });
+                                });
 }
 
 static void print_solution(u64 w, std::span<const Action> ans) {
-    bool use_shift = false;
-    for (auto [x, y, e] : ans) {
-        use_shift |= x == 0 || y == 0;
-    }
+    const bool has_zero_coords = std::ranges::any_of(
+        ans, [](Action act) constexpr noexcept { return act.x == 0 || act.y == 0; });
 
-    if (use_shift) {
-        std::cerr << "Warning: using shift (detected x == 0 or y == 0)\n";
-    }
+    assert(are_actions_correct(has_zero_coords, w, ans));
 
-    std::ofstream fout("output" + std::to_string(kTestNumber) + ".txt");
+    // State dp;
+    // for (const auto [x, y, e] : ans) {
+    //     dp(x - 1, y - 1, e);
+    //     cout << dp << "---------------------------------------------------------------------\n";
+    // }
+
+#define GET_OUTPUT_FILENAME(tn) "output" #tn ".txt"
+#define OUTPUT_FILENAME(tn) GET_OUTPUT_FILENAME(tn)
+    std::ofstream fout(OUTPUT_FILENAME(TEST_NUMBER));
+#undef OUTPUT_FILENAME
+#undef GET_OUTPUT_FILENAME
+
     assert(fout.is_open());
     assert(fout);
     fout << w << ' ' << ans.size() << '\n';
     assert(fout);
     for (auto [x, y, e] : ans) {
-        fout << x + use_shift << ' ' << y + use_shift << ' ' << u32(e) << '\n';
+        fout << x + has_zero_coords << ' ' << y + has_zero_coords << ' ' << u32(e) << '\n';
     }
     assert(fout);
 }
 
-template <i64 MaxAns>
+template <u64 MaxAns>
 static u64 try_improve(std::vector<Action>& actions) noexcept {
     static State dp;
     for (const Action act : actions) {
@@ -362,7 +414,7 @@ static u64 try_improve(std::vector<Action>& actions) noexcept {
     return dp.w();
 }
 
-template <i64 MaxAns, bool kUseDownEngineHeuristic, bool kDPEqualPrecheck = false>
+template <u64 MaxAns, bool kUseDownEngineHeuristic, bool kDPEqualPrecheck = false>
 static void solve_wrapper(uint_fast32_t rndseed, const flt t_gamma, const flt min_gamma,
                           const flt first_down_boundary = 0.5, const flt second_down_boundary = 0.1,
                           const flt third_down_boundary    = -1,
@@ -370,19 +422,25 @@ static void solve_wrapper(uint_fast32_t rndseed, const flt t_gamma, const flt mi
     auto [w, actions] = solve<MaxAns, kUseDownEngineHeuristic, kDPEqualPrecheck>(
         rndseed, t_gamma, min_gamma, first_down_boundary, second_down_boundary, third_down_boundary,
         eng_down_temp_boundary);
-    if (auto nw = try_improve<MaxAns>(actions); nw > w) {
-        cout << "Improved from " << w << " to " << nw << " [MaxAns=" << MaxAns
-             << ",rndseed=" << rndseed << "]\n";
-        w = nw;
+    if (MaxAns != kUnknownMaxAns) {
+        assert(w == MaxAns);
+        if constexpr (MaxAns != kMaxW) {
+            if (auto nw = try_improve<MaxAns>(actions); nw > w) {
+                cout << "Improved from " << w << " to " << nw << " [MaxAns=" << MaxAns
+                     << ",rndseed=" << rndseed << "]\n";
+                w = nw;
+            }
+        }
+        print_solution(w, actions);
+    } else {
+        cout << "Max ans = " << w << '\n';
     }
-    print_solution(w, actions);
 }
 
 int main() {
     // clang-format off
     if constexpr (kTestNumber == 1) {
         solve_wrapper<82, true>(1613086534, 0.52000000000000001776, 2.00000000000000004185e-08, 0.700000, 0.050000, 0.050000);
-
         // solve_wrapper<82, true>(3345303513, 0.40999999999999997558, 8.00000000000000049825e-09, 0.700000, 0.100000, 0.200000);
         // solve_wrapper<82, true>(546445804, 0.68999999999999994671, 1.00000000000000002082e-03, 0.750000, 0.400000, 0.200000, 0.000010);
         // solve_wrapper<82, true>(1153228379, 0.58999999999999996891, 1.00000000000000008180e-05, 0.770000, 0.500000, 0.200000, 0.0000001);

@@ -1,0 +1,4 @@
+/home/bwst/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/home/bwst/.local/share/JetBrains/Toolbox/apps/clion/bin/ninja/linux/x64/ninja -G Ninja -S /mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9 -B /mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/cmake-build-debug
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/cmake-build-debug

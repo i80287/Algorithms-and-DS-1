@@ -1,3 +1,5 @@
+#include <unistd.h>
+
 #include <algorithm>
 #include <any>
 #include <array>
@@ -105,46 +107,238 @@ constexpr bool correct_engine(Engine e) noexcept {
     return u32(e) - u32(Engine::kFirst) <= u32(Engine::kFifth) - u32(Engine::kFirst);
 }
 
-using flt                                     = double;
-inline constexpr u32 kTotalIters              = 700;  // u64(5e5);
+inline constexpr u32 kTotalIters              = 300;  // u64(5e5);
 inline constexpr bool kUseDownEngineHeuristic = true;
-inline constexpr u32 kItersPerCombination     = 64;
-inline constexpr std::size_t kTopKBestResults = 12;
-inline constexpr u32 kSeedDiscards            = 128;
+inline constexpr u32 kItersPerCombination     = 40;
+inline constexpr std::size_t kTopKBestResults = 16;
+inline constexpr u32 kSeedDiscards            = 0;
 #ifdef __INTELLISENSE__
 #pragma diag_suppress 304
 #pragma diag_suppress 605
 #endif
 using rnd_t = mt19937;
 
+inline constexpr std::array kGammaValues = {
+    0.15,
+    0.16,
+    0.2,
+    0.21,
+    0.22,
+    0.23,
+    0.24,
+    0.25,
+    0.26,
+    0.27,
+    0.28,
+    0.29,
+    0.3,
+    0.31,
+    0.32,
+    0.33,
+    0.34,
+    0.35,
+    0.36,
+    0.37,
+    0.38,
+    0.39,
+    0.4,
+    0.41,
+    0.42,
+    0.43,
+    0.44,
+    0.45,
+    0.46,
+    0.47,
+    0.48,
+    0.49,
+
+    0.5,
+    0.51,
+    0.52,
+    0.53,
+    0.54,
+    0.56,
+    0.57,
+    0.59,
+    0.6,
+    0.61,
+    0.63,
+    0.65,
+    0.67,
+    0.68,
+    0.69,
+    0.7,
+    0.71,
+    0.72,
+    0.73,
+    0.74,
+    0.75,
+    0.76,
+    0.77,
+    0.79,
+    0.8,
+    0.81,
+    0.82,
+    0.83,
+    0.85,
+    0.88,
+    0.9,
+    0.92,
+    0.95,
+    0.97,
+    0.99,
+    0.999,
+    0.9999,
+    0.99999,
+    0.999999,
+    0.9999999,
+    0.99999999,
+    0.999999999,
+    0.9999999999,
+    0.99999999999,
+    0.999999999999,
+    0.9999999999999,
+    0.99999999999999,
+    0.999999999999999,
+};
 inline constexpr std::array kMinGammaValues = {
-    // 1e-3, 1e-4, 1e-5, 5e-6, 1e-6,
-    5e-6, 1e-7, 5e-8, 3e-8, 2e-8, 1e-8, 9e-9,  8e-9,  7e-9,
-    6e-9, 5e-9, 4e-9, 3e-9, 2e-9, 1e-9, 5e-10, 1e-10, 5e-11,
+    1e-3, 1e-4, 1e-5, 5e-6, 1e-6, 5e-6, 1e-7, 5e-8, 3e-8,  2e-8,  1e-8,  9e-9,
+    8e-9, 7e-9, 6e-9, 5e-9, 4e-9, 3e-9, 2e-9, 1e-9, 5e-10, 1e-10, 5e-11,
 };
 inline constexpr std::array kFirstDownBoundaryValues = {
     0.99, 0.95, 0.9, 0.85, 0.8, 0.77, 0.75, 0.73, 0.7, 0.67, 0.6, 0.5,
-    //  0.4,  0.3
-    // , -1.0
+    // 0.4,  0.3, -1.0
 };
 inline constexpr std::array kSecondDownBoundaryValues = {
-    0.55, 0.5, 0.4, 0.3, 0.2,
-    // 0.1, 0.05, 0.001,
+    0.55, 0.5, 0.4, 0.3, 0.2, 0.1, 0.05, 0.001,
 };
 inline constexpr std::array kThirdDownBoundaryValues = {
-    // 0.4,
-    0.3,
-    0.2,
-    0.1,
-    0.05,
+    0.4, 0.3, 0.2, 0.1, 0.05,
 };
 inline constexpr std::array kEngDownTempBoundaryValues = {
-    // 1e-5, 1e-6, 1e-7,
-    1e-8, 1e-9, 1e-10, 1e-11, -1.0,
+    1e-5, 1e-6, 1e-7, 1e-8, 1e-9, 1e-10, 1e-11, -1.0,
 };
+
+inline constexpr size_t kThreadsCount = 10;
+static_assert(std::size(kGammaValues) % kThreadsCount == 0);
+inline constexpr size_t kGammaValuesPerThread = std::size(kGammaValues) / kThreadsCount;
 
 // #define USE_STATIC_STORAGE_FOR_DP
 // #define USE_MAX_ANS_PER_ITER_METRICS
+
+ATTRIBUTE_CONST constexpr u32 try_greedy(const array<array<Engine, m>, n>& dp,
+                                         u32 depth = 0) noexcept {
+    if (depth >= 2) {
+        return 0;
+    }
+    u32 max_ans{};
+    {
+        auto dpc(dp);
+        u32 ans = 0;
+        for (u32 i = 0; i < n; i++) {
+            for (u32 j = 0; j < m; j++) {
+                u32 mask = 0;
+                if (i > 0) {
+                    mask |= 1u << u32(dpc[i - 1][j]);
+                }
+                if (i + 1 < n) {
+                    mask |= 1u << u32(dpc[i + 1][j]);
+                }
+                if (j > 0) {
+                    mask |= 1u << u32(dpc[i][j - 1]);
+                }
+                if (j + 1 < m) {
+                    mask |= 1u << u32(dpc[i][j + 1]);
+                }
+                const auto max_engine = Engine(std::countr_one(mask));
+                dpc[i][j]             = std::max(dpc[i][j], max_engine);
+                ans += u32(p[u32(dpc[i][j])]);
+            }
+        }
+        max_ans = std::max(max_ans, ans);
+        max_ans = std::max(max_ans, try_greedy(dpc, depth + 1));
+    }
+    {
+        auto dpc(dp);
+        u32 ans = 0;
+        for (u32 i = 0; i < n; i++) {
+            for (u32 j = m - 1; j != u32(-1); j--) {
+                u32 mask = 0;
+                if (i > 0) {
+                    mask |= 1u << u32(dpc[i - 1][j]);
+                }
+                if (i + 1 < n) {
+                    mask |= 1u << u32(dpc[i + 1][j]);
+                }
+                if (j > 0) {
+                    mask |= 1u << u32(dpc[i][j - 1]);
+                }
+                if (j + 1 < m) {
+                    mask |= 1u << u32(dpc[i][j + 1]);
+                }
+                const auto max_engine = Engine(std::countr_one(mask));
+                dpc[i][j]             = std::max(dpc[i][j], max_engine);
+                ans += u32(p[u32(dpc[i][j])]);
+            }
+        }
+        max_ans = std::max(max_ans, ans);
+        max_ans = std::max(max_ans, try_greedy(dpc, depth + 1));
+    }
+    {
+        auto dpc(dp);
+        u32 ans = 0;
+        for (u32 i = n - 1; i != u32(-1); i--) {
+            for (u32 j = 0; j < m; j++) {
+                u32 mask = 0;
+                if (i > 0) {
+                    mask |= 1u << u32(dpc[i - 1][j]);
+                }
+                if (i + 1 < n) {
+                    mask |= 1u << u32(dpc[i + 1][j]);
+                }
+                if (j > 0) {
+                    mask |= 1u << u32(dpc[i][j - 1]);
+                }
+                if (j + 1 < m) {
+                    mask |= 1u << u32(dpc[i][j + 1]);
+                }
+                const auto max_engine = Engine(std::countr_one(mask));
+                dpc[i][j]             = std::max(dpc[i][j], max_engine);
+                ans += u32(p[u32(dpc[i][j])]);
+            }
+        }
+        max_ans = std::max(max_ans, ans);
+        max_ans = std::max(max_ans, try_greedy(dpc, depth + 1));
+    }
+    {
+        auto dpc(dp);
+        u32 ans = 0;
+        for (u32 i = n - 1; i != u32(-1); i--) {
+            for (u32 j = m - 1; j != u32(-1); j--) {
+                u32 mask = 0;
+                if (i > 0) {
+                    mask |= 1u << u32(dpc[i - 1][j]);
+                }
+                if (i + 1 < n) {
+                    mask |= 1u << u32(dpc[i + 1][j]);
+                }
+                if (j > 0) {
+                    mask |= 1u << u32(dpc[i][j - 1]);
+                }
+                if (j + 1 < m) {
+                    mask |= 1u << u32(dpc[i][j + 1]);
+                }
+                const auto max_engine = Engine(std::countr_one(mask));
+                dpc[i][j]             = std::max(dpc[i][j], max_engine);
+                ans += u32(p[u32(dpc[i][j])]);
+            }
+        }
+        max_ans = std::max(max_ans, ans);
+        max_ans = std::max(max_ans, try_greedy(dpc, depth + 1));
+    }
+
+    return max_ans;
+}
 
 struct SolveResult {
     i64 max_ans;
@@ -157,9 +351,9 @@ struct SolveResult {
 #endif
 };
 
-static SolveResult solve(const uint_fast32_t rndseed, const flt t_gamma, const flt min_gamma,
-                         const flt first_down_boundary, const flt second_down_boundary,
-                         const flt third_down_boundary, const flt eng_down_temp_boundary
+static SolveResult solve(const uint_fast32_t rndseed, const double t_gamma, const double min_gamma,
+                         const double first_down_boundary, const double second_down_boundary,
+                         const double third_down_boundary, const double eng_down_temp_boundary
 #ifdef USE_STATIC_STORAGE_FOR_DP
                          ,
                          array<array<Engine, m>, n>& dp
@@ -182,7 +376,7 @@ static SolveResult solve(const uint_fast32_t rndseed, const flt t_gamma, const f
     u32 max_ans_iter = 0;
     rnd_t rnd{rndseed};
     uniform_real_distribution<double> dist(0, 1);
-    flt t_k = 1;
+    double t_k = 1;
 #ifdef USE_MAX_ANS_PER_ITER_METRICS
     u32 iters_2500_max_ans{};
     u32 iters_5000_max_ans{};
@@ -207,7 +401,7 @@ static SolveResult solve(const uint_fast32_t rndseed, const flt t_gamma, const f
         if (j + 1 < m) {
             mask |= 1u << u32(dp[i][j + 1]);
         }
-        Engine max_engine = Engine(std::countr_one(mask));
+        auto max_engine = Engine(std::countr_one(mask));
         assert(correct_engine(max_engine));
 
         if constexpr (kUseDownEngineHeuristic) {
@@ -233,8 +427,9 @@ static SolveResult solve(const uint_fast32_t rndseed, const flt t_gamma, const f
         if (delta >= 0 || dist(rnd) <= std::exp(delta / t_k)) {
             dp[i][j] = max_engine;
             ans += delta;
-            if (ans > max_ans) {
-                max_ans      = ans;
+            auto gans = try_greedy(dp);
+            if (gans > max_ans) {
+                max_ans      = gans;
                 max_ans_iter = iters;
             }
         }
@@ -270,13 +465,13 @@ static SolveResult solve(const uint_fast32_t rndseed, const flt t_gamma, const f
 struct SearchResult final {
     i64 max_ans = -1;
     uint_fast32_t max_ans_seed{};
-    flt max_ans_gamma{};
-    flt max_ans_min_gamma{};
+    double max_ans_gamma{};
+    double max_ans_min_gamma{};
     u32 max_ans_iter{};
-    flt max_ans_first_down_boundary{};
-    flt max_ans_second_down_boundary{};
-    flt max_ans_third_down_boundary{};
-    flt eng_down_temp_boundary{};
+    double max_ans_first_down_boundary{};
+    double max_ans_second_down_boundary{};
+    double max_ans_third_down_boundary{};
+    double eng_down_temp_boundary{};
 #ifdef USE_MAX_ANS_PER_ITER_METRICS
     u32 iters_2500_max_ans{};
     u32 iters_5000_max_ans{};
@@ -285,7 +480,7 @@ struct SearchResult final {
 #endif
 
     constexpr bool operator==(const SearchResult& other) const noexcept {
-        return max_ans == other.max_ans;
+        return (*this <=> other) == std::weak_ordering::equivalent;
     }
     constexpr std::weak_ordering operator<=>(const SearchResult& other) const noexcept {
         if (max_ans != other.max_ans) {
@@ -298,6 +493,7 @@ struct SearchResult final {
 ATTRIBUTE_COLD
 static uint64_t get_seed_fallback() noexcept {
     fprintf(stderr, "Calling %s\n", std::source_location::current().function_name());
+    srand(u32(time(nullptr)));
     return u32(rand()) ^ uint64_t(time(nullptr));
 }
 
@@ -319,9 +515,9 @@ static uint64_t get_seed() noexcept {
     }
 }
 
-template <std::size_t N>
-static std::array<SearchResult, kTopKBestResults> runner(
-    const std::array<flt, N> gamma_values) noexcept {
+static std::array<SearchResult, kTopKBestResults> runner(size_t slice_index) noexcept {
+    fprintf(stderr, "INFO: started in thread %d\n", gettid());
+
     rnd_t rnd{uint_fast32_t(get_seed())};
 
     i64 max_ans = -1;
@@ -333,13 +529,20 @@ static std::array<SearchResult, kTopKBestResults> runner(
     static_assert(sizeof(dp) > 8192);
 #endif
 
+    std::array<double, kGammaValuesPerThread> gamma_values{};
+    {
+        assert(slice_index * kGammaValuesPerThread + kGammaValuesPerThread <= kGammaValues.size());
+        std::copy_n(kGammaValues.begin() + slice_index * kGammaValuesPerThread,
+                    kGammaValuesPerThread, gamma_values.begin());
+    }
+
     for (uint32_t iter = kItersPerCombination; iter > 0; iter--) {
-        for (const flt gamma : gamma_values) {
-            for (const flt min_gamma : kMinGammaValues) {
-                for (const flt first_down_boundary : kFirstDownBoundaryValues) {
-                    for (const flt second_down_boundary : kSecondDownBoundaryValues) {
-                        for (const flt third_down_boundary : kThirdDownBoundaryValues) {
-                            for (const flt eng_down_temp_boundary : kEngDownTempBoundaryValues) {
+        for (const double gamma : gamma_values) {
+            for (const double min_gamma : kMinGammaValues) {
+                for (const double first_down_boundary : kFirstDownBoundaryValues) {
+                    for (const double second_down_boundary : kSecondDownBoundaryValues) {
+                        for (const double third_down_boundary : kThirdDownBoundaryValues) {
+                            for (const double eng_down_temp_boundary : kEngDownTempBoundaryValues) {
                                 const auto rndseed = rnd();
                                 const auto [ans, ans_iter
 #ifdef USE_MAX_ANS_PER_ITER_METRICS
@@ -367,8 +570,8 @@ static std::array<SearchResult, kTopKBestResults> runner(
 
                                 max_ans                           = std::max(max_ans, ans);
                                 best_results[best_results_size++] = SearchResult{
-                                    .max_ans                      = ans,
-                                    .max_ans_seed                 = rndseed,
+                                    .max_ans = ans,
+                                    // .max_ans_seed                 = rndseed,
                                     .max_ans_gamma                = gamma,
                                     .max_ans_min_gamma            = min_gamma,
                                     .max_ans_iter                 = ans_iter,
@@ -390,81 +593,67 @@ static std::array<SearchResult, kTopKBestResults> runner(
             }
         }
 
-        for (u32 i = kSeedDiscards; i > 0; i--) {
-            rnd();
-        }
+        // for (u32 i = kSeedDiscards; i > 0; i--) {
+        //     rnd();
+        // }
     }
+
+    fprintf(stderr, "INFO: ended in thread %d\n", gettid());
     return best_results;
 }
 
-inline constexpr std::size_t kPackSize = 10;
+using TaskResults = std::vector<SearchResult>;
 
-template <std::size_t N>
-static std::vector<SearchResult> gsolve(const std::array<flt, N>& gamma_values) {
+static TaskResults run_solvers() noexcept {
     using TFuture = std::future<std::array<SearchResult, kTopKBestResults>>;
-    std::array<TFuture, kPackSize> thread_handles{};
-    constexpr std::size_t kValsPerThread = (N + kPackSize - 1) / kPackSize;
+    std::array<TFuture, kThreadsCount> thread_handles{};
+    TaskResults best_results;
 
-    std::size_t started_threads_count = 0;
-    for (std::size_t i = 0; TFuture & handle_future : thread_handles) {
-        if (i >= gamma_values.size()) {
-            break;
+    try {
+        for (std::size_t i = 0; TFuture & handle_future : thread_handles) {
+            handle_future = std::async(std::launch::async, &runner, i++);
         }
 
-        std::array<flt, kValsPerThread> thread_gamma_values;
-        thread_gamma_values.fill(gamma_values[i]);
+        constexpr std::size_t kMaxEntries = 8;
+        best_results.reserve(std::max(kMaxEntries, kThreadsCount * kTopKBestResults));
+        i64 best_ans = 0;
 
-        const auto copy_begin = gamma_values.begin() + i;
-        i                     = std::min(i + kValsPerThread, gamma_values.size());
-        const auto copy_end   = gamma_values.begin() + i;
-        std::copy(copy_begin, copy_end, thread_gamma_values.begin());
-
-        handle_future =
-            std::async(std::launch::async, &runner<kValsPerThread>, thread_gamma_values);
-        started_threads_count++;
-    }
-
-    printf(
-        "    gamma_values_size = %zu\n"
-        "    started_threads = %zu\n",
-        std::size(gamma_values), started_threads_count);
-
-    std::vector<SearchResult> best_results;
-    constexpr std::size_t kMaxEntries = 8;
-    best_results.reserve(std::max(kMaxEntries, started_threads_count * kTopKBestResults));
-    i64 best_ans = 0;
-
-    for (u32 thread_num = 0; TFuture & handle_future : thread_handles) {
-        thread_num++;
-        if (!handle_future.valid()) {
-            if (started_threads_count == kPackSize) {
-                fprintf(stderr, "WARNING: invalid future from thread %u\n", thread_num);
+        for (size_t thread_num = 0; TFuture & handle_future : thread_handles) {
+            thread_num++;
+            if (!handle_future.valid()) {
+                fprintf(stderr, "WARNING: invalid future from thread %zu\n", thread_num);
+                continue;
             }
-            continue;
-        }
-        auto results_arr           = handle_future.get();
-        const auto thread_best_ans = std::ranges::max_element(results_arr)->max_ans;
-        if (thread_best_ans < i64(i32(best_ans) * 0.9)) {
-            fprintf(stderr, "INFO: thread %u has result %" PRId64 " < %" PRId64 "\n", thread_num,
-                    thread_best_ans, i64(i32(best_ans) * 0.9));
-            continue;
+
+            auto results_arr           = handle_future.get();
+            const auto thread_best_ans = std::ranges::max_element(results_arr)->max_ans;
+            if (thread_best_ans < i64(i32(best_ans) * 0.9)) {
+                fprintf(stderr, "INFO: thread %zu has result %" PRId64 " < %" PRId64 "\n",
+                        thread_num, thread_best_ans, i64(i32(best_ans) * 0.9));
+                continue;
+            }
+
+            best_ans            = max(best_ans, thread_best_ans);
+            const auto end_iter = std::find_if(
+                results_arr.begin(), results_arr.end(),
+                [](const SearchResult& sr) constexpr noexcept { return sr.max_ans < 0; });
+            std::move(results_arr.begin(), end_iter, std::back_inserter(best_results));
+            std::partial_sort(
+                best_results.begin(),
+                best_results.begin() + std::ptrdiff_t(std::min(best_results.size(), kMaxEntries)),
+                best_results.end(),
+                [](const SearchResult& sr1, const SearchResult& sr2) constexpr noexcept {
+                    return sr2 < sr1;
+                });
+            if (best_results.size() > kMaxEntries) {
+                best_results.resize(kMaxEntries);
+            }
         }
 
-        best_ans = max(best_ans, thread_best_ans);
-        const auto end_iter =
-            std::find_if(results_arr.begin(), results_arr.end(),
-                         [](const SearchResult& sr) constexpr noexcept { return sr.max_ans < 0; });
-        std::move(results_arr.begin(), end_iter, std::back_inserter(best_results));
-        std::partial_sort(
-            best_results.begin(),
-            best_results.begin() + std::ptrdiff_t(std::min(best_results.size(), kMaxEntries)),
-            best_results.end(),
-            [](const SearchResult& sr1, const SearchResult& sr2) constexpr noexcept {
-                return sr2 < sr1;
-            });
-        if (best_results.size() > kMaxEntries) {
-            best_results.resize(kMaxEntries);
-        }
+    } catch (const std::exception& ex) {
+        fprintf(stderr, "ERROR: exception: %s\n", ex.what());
+    } catch (...) {
+        fprintf(stderr, "ERROR: unknown exception\n");
     }
 
     return best_results;
@@ -474,16 +663,16 @@ static std::vector<SearchResult> gsolve(const std::array<flt, N>& gamma_values) 
 
 static int setup() noexcept {
     {
-        auto s = "res" + std::to_string(kTestNumber) + ".lua";
+        auto s = "res" + std::to_string(kTestNumber);
         if (freopen(s.c_str(), "a+", stdout) == nullptr) {
             perror("freopen");
             return EXIT_FAILURE;
         }
     }
-    // if (setpriority(PRIO_PROCESS, 0, -NZERO)) {
-    //     perror("setpriority");
-    //     return EXIT_FAILURE;
-    // }
+    if (setpriority(PRIO_PROCESS, 0, -NZERO)) {
+        perror("setpriority");
+        return EXIT_FAILURE;
+    }
     rlimit rl{};
     if (getrlimit(RLIMIT_STACK, &rl)) {
         perror("getrlimit");
@@ -498,28 +687,38 @@ static int setup() noexcept {
     return EXIT_SUCCESS;
 }
 
-int main() {
-    if (int ret = setup(); ret) {
-        return ret;
+class SolversStarter final {
+public:
+    SolversStarter() noexcept : start_(time(nullptr)) {
+        assert(start_ != time_t(-1));
+    }
+    void run() noexcept {
+        print_formatted_config();
+        TaskResults best_results = run_solvers();
+        print_formatted_results(best_results);
+    }
+    ~SolversStarter() {
+        print_formatted_config_end();
     }
 
-    srand(u32(time(nullptr)));
-    time_t start = time(nullptr);
-    assert(start != time_t(-1));
-    {
+private:
+    void print_formatted_config() const noexcept {
         auto tostr = [](const auto& arr) {
             std::string s;
-            s.reserve(100);
+            s.reserve(1000);
             s += '[';
             for (double f : arr) {
-                s += __gnu_cxx::__to_xstring<std::string>(
-                    &std::vsnprintf, std::numeric_limits<double>::max_exponent10 + 20,
-                    std::abs(f) > 1e-6 ? "%lf" : "%e", f);
-                s += ',';
+                char buffer[std::numeric_limits<double>::max_exponent10 + 24]{};
+                [[maybe_unused]] int ret =
+                    snprintf(buffer, sizeof(buffer), std::abs(f) > 1e-6 ? "%.15lf," : "%e,", f);
+                assert(ret > 0);
+                s += buffer;
             }
             s += ']';
+            s.shrink_to_fit();
             return s;
         };
+        auto gv    = tostr(kGammaValues);
         auto mgv   = tostr(kMinGammaValues);
         auto fdbv  = tostr(kFirstDownBoundaryValues);
         auto sdbv  = tostr(kSecondDownBoundaryValues);
@@ -530,156 +729,86 @@ int main() {
             "    start_time = %s"
             "    filename = \"%s\"\n"
             "    kTotalIters = %u\n"
-            "    kPackSize = %zu\n"
+            "    kThreadsCount = %zu\n"
+            "    kGammaValuesPerThread = %zu\n"
             "    kItersPerCombination = %u\n"
             "    kUseDownEngineHeuristic = %u\n"
             "    kTopKBestResults = %zu\n"
+            "    kGammaValues = %s\n"
             "    kMinGammaValues = %s\n"
             "    kFirstDownBoundaryValues = %s\n"
             "    kSecondDownBoundaryValues = %s\n"
             "    kThirdDownBoundaryValues = %s\n"
             "    kEngDownTempBoundaryValues = %s\n"
-            "    solve(...) calls per gamma value = %zu\n", asctime(localtime(&start)),
-            std::source_location::current().file_name(), kTotalIters, kPackSize,
-            kItersPerCombination, kUseDownEngineHeuristic, kTopKBestResults, mgv.c_str(),
-            fdbv.c_str(), sdbv.c_str(), tdbv.c_str(), edtbv.c_str(),
+            "    solve(...) calls per gamma value = %zu\n",
+            asctime(localtime(&start_)), std::source_location::current().file_name(), kTotalIters,
+            kThreadsCount, kGammaValuesPerThread, kItersPerCombination, kUseDownEngineHeuristic,
+            kTopKBestResults, gv.c_str(), mgv.c_str(), fdbv.c_str(), sdbv.c_str(), tdbv.c_str(),
+            edtbv.c_str(),
             kItersPerCombination * kMinGammaValues.size() * kFirstDownBoundaryValues.size() *
                 kSecondDownBoundaryValues.size() * kThirdDownBoundaryValues.size() *
                 kEngDownTempBoundaryValues.size());
+        fflush(stdout);
+    }
+    void print_formatted_results(const TaskResults& results) const noexcept {
+        i64 max_ans             = std::ranges::max_element(results)->max_ans;
+        auto sc                 = double(max_ans) / kMaxW;
+        u64 duration_in_seconds = u64(time(nullptr) - start_);
+        // clang-format off
+        printf("    max_ans = %" PRId64 "\n"
+            "    potential_score = %.20lf\n"
+            "    duration_in_seconds = %" PRIu64 "\n\n",
+            max_ans, sc * sc, duration_in_seconds);
+
+        for (u32 sol_no = 0; const SearchResult& sr : results) {
+            printf("    solution number = %" PRIu32 ":\n"
+                "        max_ans = %" PRId64 "\n"
+                "        max_ans_seed = %" PRIuFAST32 "\n"
+                "        max_ans_gamma = %.25lf\n"
+                "        max_ans_min_gamma = %.20e\n"
+                "        max_ans_first_down_boundary = %lf\n"
+                "        max_ans_second_down_boundary = %lf\n"
+                "        max_ans_third_down_boundary = %lf\n"
+                "        eng_down_temp_boundary = %.20e\n"
+                "        max_ans_iter = %u\n"
+#ifdef USE_MAX_ANS_PER_ITER_METRICS
+                "        iters_2500_max_ans = %u\n"
+                "        iters_5000_max_ans = %u\n"
+                "        iters_20000_max_ans = %u\n"
+                "        iters_40000_max_ans = %u\n"
+#endif
+                ,
+                sol_no, sr.max_ans, sr.max_ans_seed,
+                sr.max_ans_gamma, sr.max_ans_min_gamma,
+                sr.max_ans_first_down_boundary,
+                sr.max_ans_second_down_boundary,
+                sr.max_ans_third_down_boundary,
+                sr.eng_down_temp_boundary,
+                sr.max_ans_iter
+#ifdef USE_MAX_ANS_PER_ITER_METRICS
+                ,
+                sr.iters_2500_max_ans,
+                sr.iters_5000_max_ans,
+                sr.iters_20000_max_ans,
+                sr.iters_40000_max_ans
+#endif
+                );
+            sol_no++;
+        }
+        printf("}\n");
+        // clang-format on
+    }
+    void print_formatted_config_end() noexcept {
+        printf("}\n");
     }
 
-    constexpr std::array kGammaValues = {
-        0.15,
-        0.16,
-        0.2,
-        0.21,
-        0.22,
-        0.23,
-        0.24,
-        0.25,
-        0.26,
-        0.27,
-        0.28,
-        0.29,
-        0.3,
-        0.31,
-        0.32,
-        0.33,
-        0.34,
-        0.35,
-        0.36,
-        0.37,
-        0.38,
-        0.39,
-        0.4,
-        0.41,
-        0.42,
-        0.43,
-        0.44,
-        0.45,
-        0.46,
-        0.47,
-        0.48,
-        0.49,
+    time_t start_{};
+};
 
-        0.5,
-        0.51,
-        0.52,
-        0.53,
-        0.54,
-        0.56,
-        0.57,
-        0.59,
-        0.6,
-        0.61,
-        0.63,
-        0.65,
-        0.67,
-        0.68,
-        0.69,
-        0.7,
-        0.71,
-        0.72,
-        0.73,
-        0.74,
-        0.75,
-        0.76,
-        0.77,
-        0.79,
-        0.8,
-        0.81,
-        0.82,
-        0.83,
-        0.85,
-        0.88,
-        0.9,
-        0.92,
-        0.95,
-        0.97,
-        0.99,
-        0.999,
-        0.9999,
-        0.99999,
-        0.999999,
-        0.9999999,
-        0.99999999,
-        0.999999999,
-        0.9999999999,
-        0.99999999999,
-        0.999999999999,
-        0.9999999999999,
-        0.99999999999999,
-        0.999999999999999,
-    };
-
-    auto best_results = gsolve(kGammaValues);
-    i64 max_ans       = std::ranges::max_element(best_results)->max_ans;
-    auto sc           = flt(max_ans) / kMaxW;
-    time_t end        = time(nullptr);
-    assert(end != time_t(-1));
-    u64 duration_in_seconds = u64(end - start);
-
-    // clang-format off
-    printf("    max_ans = %" PRId64 "\n"
-           "    potential_score = %.20lf\n"
-           "    duration_in_seconds = %" PRIu64 "\n\n",
-           max_ans, sc * sc, duration_in_seconds);
-
-    for (u32 sol_no = 0; const SearchResult& sr : best_results) {
-        printf("    solution number = %" PRIu32 ":\n"
-               "        max_ans = %" PRId64 "\n"
-               "        max_ans_seed = %" PRIuFAST32 "\n"
-               "        max_ans_gamma = %.20lf\n"
-               "        max_ans_min_gamma = %.20e\n"
-               "        max_ans_first_down_boundary = %lf\n"
-               "        max_ans_second_down_boundary = %lf\n"
-               "        max_ans_third_down_boundary = %lf\n"
-               "        eng_down_temp_boundary = %lf\n"
-               "        max_ans_iter = %u\n"
-#ifdef USE_MAX_ANS_PER_ITER_METRICS
-               "        iters_2500_max_ans = %u\n"
-               "        iters_5000_max_ans = %u\n"
-               "        iters_20000_max_ans = %u\n"
-               "        iters_40000_max_ans = %u\n"
-#endif
-               ,
-               sol_no, sr.max_ans, sr.max_ans_seed,
-               sr.max_ans_gamma, sr.max_ans_min_gamma,
-               sr.max_ans_first_down_boundary,
-               sr.max_ans_second_down_boundary,
-               sr.max_ans_third_down_boundary,
-               sr.eng_down_temp_boundary,
-               sr.max_ans_iter
-#ifdef USE_MAX_ANS_PER_ITER_METRICS
-               ,
-               sr.iters_2500_max_ans,
-               sr.iters_5000_max_ans,
-               sr.iters_20000_max_ans,
-               sr.iters_40000_max_ans
-#endif
-               );
-        sol_no++;
+int main() {
+    if (int ret = setup(); ret) {
+        return ret;
     }
-    printf("}\n");
-    // clang-format on
+
+    SolversStarter{}.run();
 }

@@ -1,0 +1,8 @@
+[
+{
+  "directory": "/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/build",
+  "command": "/usr/bin/c++  -I/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/. -g -std=gnu++23 -o CMakeFiles/materials_p9.dir/p9_parallel.cpp.o -c /mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/p9_parallel.cpp",
+  "file": "/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/p9_parallel.cpp",
+  "output": "CMakeFiles/materials_p9.dir/p9_parallel.cpp.o"
+}
+]
