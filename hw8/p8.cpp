@@ -26,23 +26,14 @@ class tree_t final {
 public:
     struct node_t final {
         u64 parent_node_index = kNullNodeIndex;
-        u64 left_mode_index   = kNullNodeIndex;
+        u64 left_node_index   = kNullNodeIndex;
         u64 right_node_index  = kNullNodeIndex;
         u64 node_index        = kNullNodeIndex;
         u64 value{};
-        map<u64, u64> nonzero_leafs_dists;
-        map<u64, u64> zero_leafs_dists;
 
         constexpr bool leaf() const noexcept {
             assert(node_index != kNullNodeIndex);
-            const bool is_leaf =
-                left_mode_index == kNullNodeIndex && right_node_index == kNullNodeIndex;
-            if (is_leaf) {
-                assert(nonzero_leafs_dists.empty());
-                assert(zero_leafs_dists.empty());
-            }
-
-            return is_leaf;
+            return left_node_index == kNullNodeIndex && right_node_index == kNullNodeIndex;
         }
     };
 
@@ -121,7 +112,7 @@ private:
         init_from_adj_list(kNullNodeIndex, kRootNodeIndex, nodes, adj_list);
     }
 
-    static bool init_from_adj_list(u64 parent_node_index, u64 node_index, vector<node_t>& nodes,
+    static void init_from_adj_list(u64 parent_node_index, u64 node_index, vector<node_t>& nodes,
                                    const vector<adjacent_nodes_t>& adj_list) {
         assert(node_index < adj_list.size());
         const adjacent_nodes_t& neighbours = adj_list[node_index];
@@ -142,29 +133,14 @@ private:
             __builtin_unreachable();
         }
         if (children_size == 0) {
-            return true;
+            return;
         }
-        node.left_mode_index  = children[0];
+        node.left_node_index  = children[0];
         node.right_node_index = children[1];
         for (size_t i = 0; i < children_size; i++) {
             const auto child_index = children[i];
-            bool child_is_leaf     = init_from_adj_list(node_index, child_index, nodes, adj_list);
-            if (child_is_leaf) {
-                if (nodes[child_index].value != 0) {
-                    node.nonzero_leafs_dists[1]++;
-                } else {
-                    node.zero_leafs_dists[1]++;
-                }
-            } else {
-                for (const auto& p : nodes[child_index].nonzero_leafs_dists) {
-                    node.nonzero_leafs_dists[p.first + 1] += p.second;
-                }
-                for (const auto& p : nodes[child_index].zero_leafs_dists) {
-                    node.zero_leafs_dists[p.first + 1] += p.second;
-                }
-            }
+            init_from_adj_list(node_index, child_index, nodes, adj_list);
         }
-        return false;
     }
 
     struct state_t final {
@@ -193,10 +169,10 @@ private:
             return;
         }
 
-        solve(node.left_mode_index, dp, nodes);
+        solve(node.left_node_index, dp, nodes);
         solve(node.right_node_index, dp, nodes);
 
-        const auto& left_node_valid_states  = dp[node.left_mode_index];
+        const auto& left_node_valid_states  = dp[node.left_node_index];
         const auto& right_node_valid_states = dp[node.right_node_index];
         vector<state_t>& node_states        = dp[node.node_index];
         assert(node_states.empty());

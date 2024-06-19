@@ -1,5 +1,3 @@
-#include <unistd.h>
-
 #include <algorithm>
 #include <any>
 #include <array>
@@ -40,8 +38,7 @@ using std::min, std::max, std::uniform_int_distribution, std::uniform_real_distr
 using std::size_t;
 using std::uint32_t;
 using std::uint64_t;
-using std::vector, std::array, std::cin, std::cout, std::conditional_t, std::mt19937, std::ranlux24,
-    std::ranlux48;
+using std::vector, std::array, std::cin, std::cout, std::conditional_t, std::mt19937;
 using u8   = uint8_t;
 using u16  = uint16_t;
 using u32  = uint32_t;
@@ -107,9 +104,9 @@ constexpr bool correct_engine(Engine e) noexcept {
     return u32(e) - u32(Engine::kFirst) <= u32(Engine::kFifth) - u32(Engine::kFirst);
 }
 
-inline constexpr u32 kTotalIters              = 300;  // u64(5e5);
+inline constexpr u32 kTotalIters              = 60;  // u64(5e5);
 inline constexpr bool kUseDownEngineHeuristic = true;
-inline constexpr u32 kItersPerCombination     = 40;
+inline constexpr u32 kItersPerCombination     = 30;
 inline constexpr std::size_t kTopKBestResults = 16;
 inline constexpr u32 kSeedDiscards            = 0;
 #ifdef __INTELLISENSE__
@@ -202,21 +199,58 @@ inline constexpr std::array kGammaValues = {
     0.999999999999999,
 };
 inline constexpr std::array kMinGammaValues = {
-    1e-3, 1e-4, 1e-5, 5e-6, 1e-6, 5e-6, 1e-7, 5e-8, 3e-8,  2e-8,  1e-8,  9e-9,
-    8e-9, 7e-9, 6e-9, 5e-9, 4e-9, 3e-9, 2e-9, 1e-9, 5e-10, 1e-10, 5e-11,
+    // 1e-3, 1e-4, 1e-5,
+    5e-6,
+    1e-6,
+    5e-6,
+    1e-7,
+    // 5e-8,
+    3e-8,
+    // 2e-8,
+    1e-8,
+    9e-9,
+    8e-9,
+    7e-9,
+    // 6e-9,
+    5e-9,
+    // 4e-9,
+    3e-9,
+    2e-9,
+    1e-9,
+    5e-10,
+    1e-10,
+    5e-11,
 };
 inline constexpr std::array kFirstDownBoundaryValues = {
-    0.99, 0.95, 0.9, 0.85, 0.8, 0.77, 0.75, 0.73, 0.7, 0.67, 0.6, 0.5,
+    // 0.99, 0.95,
+    0.9, 0.87, 0.85, 0.83, 0.8, 0.77, 0.75, 0.73, 0.7, 0.67, 0.6, 0.5,
     // 0.4,  0.3, -1.0
 };
 inline constexpr std::array kSecondDownBoundaryValues = {
-    0.55, 0.5, 0.4, 0.3, 0.2, 0.1, 0.05, 0.001,
+    0.55,
+    0.5,
+    0.4,
+    0.3,
+    0.2,
+    0.1,
+    // 0.05,
+    0.001,
 };
 inline constexpr std::array kThirdDownBoundaryValues = {
     0.4, 0.3, 0.2, 0.1, 0.05,
 };
 inline constexpr std::array kEngDownTempBoundaryValues = {
-    1e-5, 1e-6, 1e-7, 1e-8, 1e-9, 1e-10, 1e-11, -1.0,
+    1e-5,
+    1e-6,
+    1e-7,
+    1e-8,
+    // 1e-9,
+    1e-10,
+    1e-11,
+    -1.0,
+};
+inline constexpr std::array kInitialTempValues = {
+    5.0, 4.5, 4.0, 3.5, 3.0, 2.5, 2.0, 1.5, 1.0, 0.5,
 };
 
 inline constexpr size_t kThreadsCount = 10;
@@ -226,11 +260,8 @@ inline constexpr size_t kGammaValuesPerThread = std::size(kGammaValues) / kThrea
 // #define USE_STATIC_STORAGE_FOR_DP
 // #define USE_MAX_ANS_PER_ITER_METRICS
 
-ATTRIBUTE_CONST constexpr u32 try_greedy(const array<array<Engine, m>, n>& dp,
-                                         u32 depth = 0) noexcept {
-    if (depth >= 2) {
-        return 0;
-    }
+template <size_t kDepth = 0>
+ATTRIBUTE_CONST constexpr u32 try_greedy(const array<array<Engine, m>, n>& dp) noexcept {
     u32 max_ans{};
     {
         auto dpc(dp);
@@ -256,7 +287,9 @@ ATTRIBUTE_CONST constexpr u32 try_greedy(const array<array<Engine, m>, n>& dp,
             }
         }
         max_ans = std::max(max_ans, ans);
-        max_ans = std::max(max_ans, try_greedy(dpc, depth + 1));
+        if constexpr (kDepth + 1 < 2) {
+            max_ans = std::max(max_ans, try_greedy<kDepth + 1>(dpc));
+        }
     }
     {
         auto dpc(dp);
@@ -282,7 +315,9 @@ ATTRIBUTE_CONST constexpr u32 try_greedy(const array<array<Engine, m>, n>& dp,
             }
         }
         max_ans = std::max(max_ans, ans);
-        max_ans = std::max(max_ans, try_greedy(dpc, depth + 1));
+        if constexpr (kDepth + 1 < 2) {
+            max_ans = std::max(max_ans, try_greedy<kDepth + 1>(dpc));
+        }
     }
     {
         auto dpc(dp);
@@ -308,7 +343,9 @@ ATTRIBUTE_CONST constexpr u32 try_greedy(const array<array<Engine, m>, n>& dp,
             }
         }
         max_ans = std::max(max_ans, ans);
-        max_ans = std::max(max_ans, try_greedy(dpc, depth + 1));
+        if constexpr (kDepth + 1 < 2) {
+            max_ans = std::max(max_ans, try_greedy<kDepth + 1>(dpc));
+        }
     }
     {
         auto dpc(dp);
@@ -334,7 +371,9 @@ ATTRIBUTE_CONST constexpr u32 try_greedy(const array<array<Engine, m>, n>& dp,
             }
         }
         max_ans = std::max(max_ans, ans);
-        max_ans = std::max(max_ans, try_greedy(dpc, depth + 1));
+        if constexpr (kDepth + 1 < 2) {
+            max_ans = std::max(max_ans, try_greedy<kDepth + 1>(dpc));
+        }
     }
 
     return max_ans;
@@ -351,7 +390,8 @@ struct SolveResult {
 #endif
 };
 
-static SolveResult solve(const uint_fast32_t rndseed, const double t_gamma, const double min_gamma,
+static SolveResult solve(const uint_fast32_t rndseed, const double initial_temp_value,
+                         const double t_gamma, const double min_gamma,
                          const double first_down_boundary, const double second_down_boundary,
                          const double third_down_boundary, const double eng_down_temp_boundary
 #ifdef USE_STATIC_STORAGE_FOR_DP
@@ -376,7 +416,7 @@ static SolveResult solve(const uint_fast32_t rndseed, const double t_gamma, cons
     u32 max_ans_iter = 0;
     rnd_t rnd{rndseed};
     uniform_real_distribution<double> dist(0, 1);
-    double t_k = 1;
+    double t_k = initial_temp_value;
 #ifdef USE_MAX_ANS_PER_ITER_METRICS
     u32 iters_2500_max_ans{};
     u32 iters_5000_max_ans{};
@@ -385,8 +425,8 @@ static SolveResult solve(const uint_fast32_t rndseed, const double t_gamma, cons
 #endif
 
     for (u32 iters = 1; iters <= kTotalIters; t_k = max(t_k * t_gamma, min_gamma), iters++) {
-        const u32 i = rnd() % n;
-        const u32 j = rnd() % m;
+        const u32 i = u32(rnd()) % n;
+        const u32 j = u32(rnd()) % m;
 
         u32 mask = 0;
         if (i > 0) {
@@ -465,6 +505,7 @@ static SolveResult solve(const uint_fast32_t rndseed, const double t_gamma, cons
 struct SearchResult final {
     i64 max_ans = -1;
     uint_fast32_t max_ans_seed{};
+    double max_ans_initial_temp_value{};
     double max_ans_gamma{};
     double max_ans_min_gamma{};
     u32 max_ans_iter{};
@@ -537,55 +578,58 @@ static std::array<SearchResult, kTopKBestResults> runner(size_t slice_index) noe
     }
 
     for (uint32_t iter = kItersPerCombination; iter > 0; iter--) {
-        for (const double gamma : gamma_values) {
-            for (const double min_gamma : kMinGammaValues) {
-                for (const double first_down_boundary : kFirstDownBoundaryValues) {
-                    for (const double second_down_boundary : kSecondDownBoundaryValues) {
-                        for (const double third_down_boundary : kThirdDownBoundaryValues) {
-                            for (const double eng_down_temp_boundary : kEngDownTempBoundaryValues) {
-                                const auto rndseed = rnd();
-                                const auto [ans, ans_iter
+        for (const double eng_down_temp_boundary : kEngDownTempBoundaryValues) {
+            for (const double third_down_boundary : kThirdDownBoundaryValues) {
+                for (const double second_down_boundary : kSecondDownBoundaryValues) {
+                    for (const double first_down_boundary : kFirstDownBoundaryValues) {
+                        for (const double min_gamma : kMinGammaValues) {
+                            for (const double gamma : gamma_values) {
+                                for (const double initial_temp_value : kInitialTempValues) {
+                                    const auto rndseed = rnd();
+                                    const auto [ans, ans_iter
 #ifdef USE_MAX_ANS_PER_ITER_METRICS
-                                            ,
-                                            iters_20000_max_ans, iters_40000_max_ans,
-                                            iters_2500_max_ans, iters_5000_max_ans
+                                                ,
+                                                iters_20000_max_ans, iters_40000_max_ans,
+                                                iters_2500_max_ans, iters_5000_max_ans
 #endif
-                                ] = solve(rndseed, gamma, min_gamma, first_down_boundary,
-                                          second_down_boundary, third_down_boundary,
-                                          eng_down_temp_boundary
+                                    ] = solve(rndseed, initial_temp_value, gamma, min_gamma,
+                                              first_down_boundary, second_down_boundary,
+                                              third_down_boundary, eng_down_temp_boundary
 #ifdef USE_STATIC_STORAGE_FOR_DP
-                                          ,
-                                          dp
+                                              ,
+                                              dp
 #endif
-                                );
-                                if (ans * 10 < max_ans * 9) {
-                                    continue;
-                                }
+                                    );
+                                    if (ans * 10 < max_ans * 9) {
+                                        continue;
+                                    }
 
-                                if (ans > max_ans) {
-                                    best_results_size = 0;
-                                } else if (best_results_size >= best_results.size()) {
-                                    continue;
-                                }
+                                    if (ans > max_ans) {
+                                        best_results_size = 0;
+                                    } else if (best_results_size >= best_results.size()) {
+                                        continue;
+                                    }
 
-                                max_ans                           = std::max(max_ans, ans);
-                                best_results[best_results_size++] = SearchResult{
-                                    .max_ans = ans,
-                                    // .max_ans_seed                 = rndseed,
-                                    .max_ans_gamma                = gamma,
-                                    .max_ans_min_gamma            = min_gamma,
-                                    .max_ans_iter                 = ans_iter,
-                                    .max_ans_first_down_boundary  = first_down_boundary,
-                                    .max_ans_second_down_boundary = second_down_boundary,
-                                    .max_ans_third_down_boundary  = third_down_boundary,
-                                    .eng_down_temp_boundary       = eng_down_temp_boundary,
+                                    max_ans                           = std::max(max_ans, ans);
+                                    best_results[best_results_size++] = SearchResult{
+                                        .max_ans                      = ans,
+                                        .max_ans_seed                 = rndseed,
+                                        .max_ans_initial_temp_value   = initial_temp_value,
+                                        .max_ans_gamma                = gamma,
+                                        .max_ans_min_gamma            = min_gamma,
+                                        .max_ans_iter                 = ans_iter,
+                                        .max_ans_first_down_boundary  = first_down_boundary,
+                                        .max_ans_second_down_boundary = second_down_boundary,
+                                        .max_ans_third_down_boundary  = third_down_boundary,
+                                        .eng_down_temp_boundary       = eng_down_temp_boundary,
 #ifdef USE_MAX_ANS_PER_ITER_METRICS
-                                    .iters_2500_max_ans  = iters_2500_max_ans,
-                                    .iters_5000_max_ans  = iters_5000_max_ans,
-                                    .iters_20000_max_ans = iters_20000_max_ans,
-                                    .iters_40000_max_ans = iters_40000_max_ans,
+                                        .iters_2500_max_ans  = iters_2500_max_ans,
+                                        .iters_5000_max_ans  = iters_5000_max_ans,
+                                        .iters_20000_max_ans = iters_20000_max_ans,
+                                        .iters_40000_max_ans = iters_40000_max_ans,
 #endif
-                                };
+                                    };
+                                }
                             }
                         }
                     }
@@ -678,7 +722,7 @@ static int setup() noexcept {
         perror("getrlimit");
         return EXIT_FAILURE;
     }
-    rl.rlim_cur = std::max(rl.rlim_cur, rlim_t(128) << 20);
+    rl.rlim_cur = std::max(rl.rlim_cur, rlim_t(256) << 20);
     if (setrlimit(RLIMIT_STACK, &rl)) {
         perror("setrlimit");
         return EXIT_FAILURE;
@@ -718,6 +762,7 @@ private:
             s.shrink_to_fit();
             return s;
         };
+        auto itv   = tostr(kInitialTempValues);
         auto gv    = tostr(kGammaValues);
         auto mgv   = tostr(kMinGammaValues);
         auto fdbv  = tostr(kFirstDownBoundaryValues);
@@ -734,6 +779,7 @@ private:
             "    kItersPerCombination = %u\n"
             "    kUseDownEngineHeuristic = %u\n"
             "    kTopKBestResults = %zu\n"
+            "    kInitialTempValues = %s\n"
             "    kGammaValues = %s\n"
             "    kMinGammaValues = %s\n"
             "    kFirstDownBoundaryValues = %s\n"
@@ -743,11 +789,11 @@ private:
             "    solve(...) calls per gamma value = %zu\n",
             asctime(localtime(&start_)), std::source_location::current().file_name(), kTotalIters,
             kThreadsCount, kGammaValuesPerThread, kItersPerCombination, kUseDownEngineHeuristic,
-            kTopKBestResults, gv.c_str(), mgv.c_str(), fdbv.c_str(), sdbv.c_str(), tdbv.c_str(),
-            edtbv.c_str(),
-            kItersPerCombination * kMinGammaValues.size() * kFirstDownBoundaryValues.size() *
-                kSecondDownBoundaryValues.size() * kThirdDownBoundaryValues.size() *
-                kEngDownTempBoundaryValues.size());
+            kTopKBestResults, itv.c_str(), gv.c_str(), mgv.c_str(), fdbv.c_str(), sdbv.c_str(),
+            tdbv.c_str(), edtbv.c_str(),
+            kInitialTempValues.size() * kItersPerCombination * kMinGammaValues.size() *
+                kFirstDownBoundaryValues.size() * kSecondDownBoundaryValues.size() *
+                kThirdDownBoundaryValues.size() * kEngDownTempBoundaryValues.size());
         fflush(stdout);
     }
     void print_formatted_results(const TaskResults& results) const noexcept {
@@ -764,6 +810,7 @@ private:
             printf("    solution number = %" PRIu32 ":\n"
                 "        max_ans = %" PRId64 "\n"
                 "        max_ans_seed = %" PRIuFAST32 "\n"
+                "        max_ans_initial_temp_value = %lf\n"
                 "        max_ans_gamma = %.25lf\n"
                 "        max_ans_min_gamma = %.20e\n"
                 "        max_ans_first_down_boundary = %lf\n"
@@ -779,6 +826,7 @@ private:
 #endif
                 ,
                 sol_no, sr.max_ans, sr.max_ans_seed,
+                sr.max_ans_initial_temp_value,
                 sr.max_ans_gamma, sr.max_ans_min_gamma,
                 sr.max_ans_first_down_boundary,
                 sr.max_ans_second_down_boundary,
@@ -795,10 +843,9 @@ private:
                 );
             sol_no++;
         }
-        printf("}\n");
         // clang-format on
     }
-    void print_formatted_config_end() noexcept {
+    static void print_formatted_config_end() noexcept {
         printf("}\n");
     }
 
@@ -809,6 +856,5 @@ int main() {
     if (int ret = setup(); ret) {
         return ret;
     }
-
     SolversStarter{}.run();
 }

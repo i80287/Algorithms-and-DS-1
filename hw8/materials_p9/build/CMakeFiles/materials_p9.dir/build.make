@@ -69,28 +69,28 @@ include CMakeFiles/materials_p9.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/materials_p9.dir/flags.make
 
-CMakeFiles/materials_p9.dir/p9_parallel.cpp.o: CMakeFiles/materials_p9.dir/flags.make
-CMakeFiles/materials_p9.dir/p9_parallel.cpp.o: /mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/p9_parallel.cpp
-CMakeFiles/materials_p9.dir/p9_parallel.cpp.o: CMakeFiles/materials_p9.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/materials_p9.dir/p9_parallel.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/materials_p9.dir/p9_parallel.cpp.o -MF CMakeFiles/materials_p9.dir/p9_parallel.cpp.o.d -o CMakeFiles/materials_p9.dir/p9_parallel.cpp.o -c /mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/p9_parallel.cpp
+CMakeFiles/materials_p9.dir/solve/p9_generic_gen.cpp.o: CMakeFiles/materials_p9.dir/flags.make
+CMakeFiles/materials_p9.dir/solve/p9_generic_gen.cpp.o: /mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/solve/p9_generic_gen.cpp
+CMakeFiles/materials_p9.dir/solve/p9_generic_gen.cpp.o: CMakeFiles/materials_p9.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/materials_p9.dir/solve/p9_generic_gen.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/materials_p9.dir/solve/p9_generic_gen.cpp.o -MF CMakeFiles/materials_p9.dir/solve/p9_generic_gen.cpp.o.d -o CMakeFiles/materials_p9.dir/solve/p9_generic_gen.cpp.o -c /mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/solve/p9_generic_gen.cpp
 
-CMakeFiles/materials_p9.dir/p9_parallel.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/materials_p9.dir/p9_parallel.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/p9_parallel.cpp > CMakeFiles/materials_p9.dir/p9_parallel.cpp.i
+CMakeFiles/materials_p9.dir/solve/p9_generic_gen.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/materials_p9.dir/solve/p9_generic_gen.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/solve/p9_generic_gen.cpp > CMakeFiles/materials_p9.dir/solve/p9_generic_gen.cpp.i
 
-CMakeFiles/materials_p9.dir/p9_parallel.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/materials_p9.dir/p9_parallel.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/p9_parallel.cpp -o CMakeFiles/materials_p9.dir/p9_parallel.cpp.s
+CMakeFiles/materials_p9.dir/solve/p9_generic_gen.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/materials_p9.dir/solve/p9_generic_gen.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/solve/p9_generic_gen.cpp -o CMakeFiles/materials_p9.dir/solve/p9_generic_gen.cpp.s
 
 # Object files for target materials_p9
 materials_p9_OBJECTS = \
-"CMakeFiles/materials_p9.dir/p9_parallel.cpp.o"
+"CMakeFiles/materials_p9.dir/solve/p9_generic_gen.cpp.o"
 
 # External object files for target materials_p9
 materials_p9_EXTERNAL_OBJECTS =
 
-materials_p9: CMakeFiles/materials_p9.dir/p9_parallel.cpp.o
+materials_p9: CMakeFiles/materials_p9.dir/solve/p9_generic_gen.cpp.o
 materials_p9: CMakeFiles/materials_p9.dir/build.make
 materials_p9: CMakeFiles/materials_p9.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable materials_p9"

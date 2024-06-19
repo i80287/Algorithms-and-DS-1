@@ -8,7 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/p9_parallel.cpp" "CMakeFiles/materials_p9.dir/p9_parallel.cpp.o" "gcc" "CMakeFiles/materials_p9.dir/p9_parallel.cpp.o.d"
+  "/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/solve/p9_generic_gen.cpp" "CMakeFiles/materials_p9.dir/solve/p9_generic_gen.cpp.o" "gcc" "CMakeFiles/materials_p9.dir/solve/p9_generic_gen.cpp.o.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

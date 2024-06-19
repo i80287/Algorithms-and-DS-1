@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/materials_p9.dir/p9_parallel.cpp.o"
-  "CMakeFiles/materials_p9.dir/p9_parallel.cpp.o.d"
+  "CMakeFiles/materials_p9.dir/solve/p9_generic_gen.cpp.o"
+  "CMakeFiles/materials_p9.dir/solve/p9_generic_gen.cpp.o.d"
   "materials_p9"
   "materials_p9.pdb"
 )

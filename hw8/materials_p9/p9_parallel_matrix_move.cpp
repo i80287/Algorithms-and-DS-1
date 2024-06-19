@@ -19,7 +19,7 @@
 
 using std::size_t, std::uint64_t, std::uint32_t, std::int32_t, std::int64_t, std::array;
 
-#define TEST_NUMBER 8
+#define TEST_NUMBER 1
 inline constexpr uint32_t kTestNumber = TEST_NUMBER;
 
 #if TEST_NUMBER == 1
@@ -89,15 +89,14 @@ inline constexpr std::array kGammaValues = {
     0.47,
     0.48,
     0.49,
+
     0.5,
     0.51,
     0.52,
     0.53,
     0.54,
-    0.55,
     0.56,
     0.57,
-    0.58,
     0.59,
     0.6,
     0.61,
@@ -137,53 +136,62 @@ inline constexpr std::array kGammaValues = {
     0.99999999999,
     0.999999999999,
     0.9999999999999,
+    0.99999999999999,
+    0.999999999999999,
 };
 inline constexpr std::array kMinGammaValues = {
-    // 1e-3, 1e-4,
-    // 1e-5,
-    // 5e-6,
-    // 1e-6,
-    // 5e-6,
-    1e-7, 5e-8,
-    //  3e-8, 2e-8, 
-     1e-8, 9e-9, 8e-9,
-    //  7e-9, 6e-9, 
-    5e-9, 4e-9,
-    //  3e-9, 2e-9, 
-     1e-9, 5e-10, 1e-10,
-    // 5e-11,
+    // 1e-3, 1e-4, 1e-5,
+    5e-6,
+    1e-6,
+    5e-6,
+    1e-7,
+    // 5e-8,
+    3e-8,
+    // 2e-8,
+    1e-8,
+    9e-9,
+    8e-9,
+    7e-9,
+    // 6e-9,
+    5e-9,
+    // 4e-9,
+    3e-9,
+    2e-9,
+    1e-9,
+    5e-10,
+    1e-10,
+    5e-11,
 };
-inline constexpr std::array kFirstDecreaseProbability = {
-    // 0.99, 0.95, 0.9,
-    // 0.85, 0.8, 0.77, 
-    0.75, 
-    // 0.73, 
-    0.7,
-    //  0.67, 
-     0.6,
-    // 0.5, 0.4, 0.3, 0.2, -1.0,
+inline constexpr std::array kFirstDownBoundaryValues = {
+    // 0.99, 0.95,
+    0.9, 0.87, 0.85, 0.83, 0.8, 0.77, 0.75, 0.73, 0.7, 0.67, 0.6, 0.5,
+    // 0.4,  0.3, -1.0
 };
-inline constexpr std::array kSecondDecreaseProbability = {
-    // 0.55,
-    0.5, 0.4, 0.3, 0.2,
-    //  0.1,
-    //  0.05, 0.001,
-};
-inline constexpr std::array kThirdDecreaseProbability = {
+inline constexpr std::array kSecondDownBoundaryValues = {
+    0.55,
+    0.5,
     0.4,
-    //  0.3,
-     0.2,
-    //  0.1, 0.05,
+    0.3,
+    0.2,
+    0.1,
+    // 0.05,
+    0.001,
 };
-inline constexpr std::array kMinTemperatureForEngDecreaseValues = {
-    // 2.0, 1e-5,
-    // 1e-6,
+inline constexpr std::array kThirdDownBoundaryValues = {
+    0.4, 0.3, 0.2, 0.1, 0.05,
+};
+inline constexpr std::array kEngDownTempBoundaryValues = {
+    1e-5,
+    1e-6,
     1e-7,
     1e-8,
     // 1e-9,
     1e-10,
-    //  1e-11,
-    // -1.0,
+    1e-11,
+    -1.0,
+};
+inline constexpr std::array kInitialTempValues = {
+    5.0, 4.5, 4.0, 3.5, 3.0, 2.5, 2.0, 1.5, 1.0, 0.5,
 };
 
 inline constexpr uint32_t kBlockSize = std::min({n, m, static_cast<decltype(n)>(4)});
@@ -218,6 +226,7 @@ struct OptimizeParams {
     double second_decrease_probability;
     double third_decrease_probability;
     double min_temperature_for_eng_decrease;
+    double initial_temp_value;
 };
 
 template <std::size_t N, std::size_t M>
@@ -241,41 +250,189 @@ ATTRIBUTE_CONST constexpr Engine max_cell_engine(const array<array<Engine, M>, N
 
 template <size_t N, size_t M>
 constexpr bool compare_dp_power(const array<array<Engine, M>, N>& dp,
-                                int64_t expected_power) noexcept {
-    int64_t total_power = 0;
+                                uint64_t expected_power) noexcept {
+    uint64_t total_power = 0;
     for (const auto& row : dp) {
         for (const Engine e : row) {
-            total_power += p[size_t(e)];
+            total_power += uint32_t(p[size_t(e)]);
         }
     }
     return total_power == expected_power;
 }
 
+template <size_t kDepth = 0>
+ATTRIBUTE_CONST constexpr uint32_t try_improve_greedily(const MapBlock& dp) noexcept {
+    uint32_t max_ans{};
+    {
+        auto dpc(dp);
+        uint32_t ans = 0;
+        for (auto i = 0zu; i < kBlockSize; i++) {
+            for (auto j = 0zu; j < kBlockSize; j++) {
+                dpc[i][j] = std::max(dpc[i][j], max_cell_engine(dpc, i, j));
+                ans += uint32_t(p[uint32_t(dpc[i][j])]);
+            }
+        }
+        max_ans = std::max(max_ans, ans);
+        if constexpr (kDepth + 1 < 2) {
+            max_ans = std::max(max_ans, try_improve_greedily<kDepth + 1>(dpc));
+        }
+    }
+    {
+        auto dpc(dp);
+        uint32_t ans = 0;
+        for (auto i = 0zu; i < kBlockSize; i++) {
+            for (size_t j = kBlockSize - 1; j != size_t(-1); j--) {
+                dpc[i][j] = std::max(dpc[i][j], max_cell_engine(dpc, i, j));
+                ans += uint32_t(p[uint32_t(dpc[i][j])]);
+            }
+        }
+        max_ans = std::max(max_ans, ans);
+        if constexpr (kDepth + 1 < 2) {
+            max_ans = std::max(max_ans, try_improve_greedily<kDepth + 1>(dpc));
+        }
+    }
+    {
+        auto dpc(dp);
+        uint32_t ans = 0;
+        for (size_t i = kBlockSize - 1; i != size_t(-1); i--) {
+            for (auto j = 0zu; j < kBlockSize; j++) {
+                dpc[i][j] = std::max(dpc[i][j], max_cell_engine(dpc, i, j));
+                ans += uint32_t(p[uint32_t(dpc[i][j])]);
+            }
+        }
+        max_ans = std::max(max_ans, ans);
+        if constexpr (kDepth + 1 < 2) {
+            max_ans = std::max(max_ans, try_improve_greedily<kDepth + 1>(dpc));
+        }
+    }
+    {
+        auto dpc(dp);
+        uint32_t ans = 0;
+        for (size_t i = kBlockSize - 1; i != size_t(-1); i--) {
+            for (size_t j = kBlockSize - 1; j != size_t(-1); j--) {
+                dpc[i][j] = std::max(dpc[i][j], max_cell_engine(dpc, i, j));
+                ans += uint32_t(p[uint32_t(dpc[i][j])]);
+            }
+        }
+        max_ans = std::max(max_ans, ans);
+        if constexpr (kDepth + 1 < 2) {
+            max_ans = std::max(max_ans, try_improve_greedily<kDepth + 1>(dpc));
+        }
+    }
+
+    return max_ans;
+}
+
+template <size_t kDepth = 0>
+constexpr bool improve_greedily(MapBlock& dp, uint64_t needed_power) noexcept {
+    {
+        auto dpc(dp);
+        uint64_t ans = 0;
+        for (auto i = 0zu; i < kBlockSize; i++) {
+            for (auto j = 0zu; j < kBlockSize; j++) {
+                dpc[i][j] = std::max(dpc[i][j], max_cell_engine(dpc, i, j));
+                ans += uint32_t(p[uint32_t(dpc[i][j])]);
+            }
+        }
+        if (ans == needed_power) {
+            dp = dpc;
+            return true;
+        }
+        if constexpr (kDepth + 1 < 2) {
+            if (improve_greedily<kDepth + 1>(dpc, needed_power)) {
+                dp = dpc;
+                return true;
+            }
+        }
+    }
+    {
+        auto dpc(dp);
+        uint64_t ans = 0;
+        for (auto i = 0zu; i < kBlockSize; i++) {
+            for (size_t j = kBlockSize - 1; j != size_t(-1); j--) {
+                dpc[i][j] = std::max(dpc[i][j], max_cell_engine(dpc, i, j));
+                ans += uint32_t(p[uint32_t(dpc[i][j])]);
+            }
+        }
+        if (ans == needed_power) {
+            dp = dpc;
+            return true;
+        }
+        if constexpr (kDepth + 1 < 2) {
+            if (improve_greedily<kDepth + 1>(dpc, needed_power)) {
+                dp = dpc;
+                return true;
+            }
+        }
+    }
+    {
+        auto dpc(dp);
+        uint64_t ans = 0;
+        for (size_t i = kBlockSize - 1; i != size_t(-1); i--) {
+            for (auto j = 0zu; j < kBlockSize; j++) {
+                dpc[i][j] = std::max(dpc[i][j], max_cell_engine(dpc, i, j));
+                ans += uint32_t(p[uint32_t(dpc[i][j])]);
+            }
+        }
+        if (ans == needed_power) {
+            dp = dpc;
+            return true;
+        }
+        if constexpr (kDepth + 1 < 2) {
+            if (improve_greedily<kDepth + 1>(dpc, needed_power)) {
+                dp = dpc;
+                return true;
+            }
+        }
+    }
+    {
+        auto dpc(dp);
+        uint64_t ans = 0;
+        for (size_t i = kBlockSize - 1; i != size_t(-1); i--) {
+            for (size_t j = kBlockSize - 1; j != size_t(-1); j--) {
+                dpc[i][j] = std::max(dpc[i][j], max_cell_engine(dpc, i, j));
+                ans += uint32_t(p[uint32_t(dpc[i][j])]);
+            }
+        }
+        if (ans == needed_power) {
+            dp = dpc;
+            return true;
+        }
+        if constexpr (kDepth + 1 < 2) {
+            if (improve_greedily<kDepth + 1>(dpc, needed_power)) {
+                dp = dpc;
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
 struct SimulatedAnnealingResult {
-    int64_t power_after_annealing;
-    int64_t max_power;
+    uint64_t max_power;
     uint64_t max_power_iteration;
 };
 
-static SimulatedAnnealingResult apply_simulated_annealing(MapBlock& block_dp,
+static SimulatedAnnealingResult apply_simulated_annealing(const MapBlock& original_block_dp,
                                                           const OptimizeParams& params) noexcept {
+                                                            MapBlock block_dp(original_block_dp);
     std::mt19937 rnd{params.seed};
     std::uniform_real_distribution<double> dist(0, 1);
 
-    int64_t total_power = 0;
+    uint64_t total_power = 0;
     for (const auto& row : block_dp) {
         for (const Engine e : row) {
-            total_power += p[size_t(e)];
+            total_power += uint32_t(p[size_t(e)]);
         }
     }
-    int64_t max_power          = 0;
+    uint64_t max_power          = total_power;
     size_t max_power_iteration = 0;
     double t_k                 = 1;
     for (size_t iteration = 1; iteration <= kMaxIterationsInBlock;
-         iteration++, t_k = std::max(t_k * params.gamma, params.min_gamma)) {
-        const size_t i = rnd() % kBlockSize;
-        const size_t j = rnd() % kBlockSize;
-
+         t_k              = std::max(t_k * params.gamma, params.min_gamma), iteration++) {
+        const size_t i          = uint32_t(rnd()) % kBlockSize;
+        const size_t j          = uint32_t(rnd()) % kBlockSize;
         const Engine max_engine = max_cell_engine(block_dp, i, j);
 
         auto try_decrease_engine = [&](Engine e) noexcept {
@@ -303,9 +460,10 @@ static SimulatedAnnealingResult apply_simulated_annealing(MapBlock& block_dp,
         static_assert(std::is_signed_v<decltype(delta)>);
         if (delta >= 0 || dist(rnd) <= std::exp(delta / t_k)) {
             block_dp[i][j] = placed_engine;
-            total_power += delta;
-            if (total_power > max_power) {
-                max_power           = total_power;
+            total_power = uint64_t(int64_t(total_power) + delta);
+            auto greedy_improved_ans = try_improve_greedily(block_dp);
+            if (greedy_improved_ans > max_power) {
+                max_power           = greedy_improved_ans;
                 max_power_iteration = iteration;
             }
         }
@@ -314,33 +472,32 @@ static SimulatedAnnealingResult apply_simulated_annealing(MapBlock& block_dp,
     assert(compare_dp_power(block_dp, total_power));
 
     return {
-        .power_after_annealing = total_power,
-        .max_power             = max_power,
-        .max_power_iteration   = max_power_iteration,
+        .max_power           = max_power,
+        .max_power_iteration = max_power_iteration,
     };
 }
 
-static int64_t reach_power(MapBlock& block_dp, const OptimizeParams& params,
-                           size_t best_reached_power_sa_iteration) noexcept {
-    assert(best_reached_power_sa_iteration <= kMaxIterationsInBlock);
+static void optimize_block_with_params(MapBlock& block_dp, const OptimizeParams& params,
+                                       uint64_t best_reached_power,
+                                       size_t best_reached_power_sa_iteration) noexcept {
     if (best_reached_power_sa_iteration > kMaxIterationsInBlock) {
         __builtin_unreachable();
     }
+
     std::mt19937 rnd{params.seed};
     std::uniform_real_distribution<double> dist(0, 1);
 
-    int64_t total_power = 0;
+    uint64_t total_power = 0;
     for (const auto& row : block_dp) {
         for (const Engine e : row) {
-            total_power += p[size_t(e)];
+            total_power += uint32_t(p[size_t(e)]);
         }
     }
-    double t_k = 1;
-    for (size_t iteration = 1; iteration <= best_reached_power_sa_iteration;
-         iteration++, t_k = std::max(t_k * params.gamma, params.min_gamma)) {
-        const size_t i = rnd() % kBlockSize;
-        const size_t j = rnd() % kBlockSize;
-
+    double t_k                 = params.initial_temp_value;
+    for (size_t iteration = 1; iteration <= kMaxIterationsInBlock;
+         t_k              = std::max(t_k * params.gamma, params.min_gamma), iteration++) {
+        const size_t i          = uint32_t(rnd()) % kBlockSize;
+        const size_t j          = uint32_t(rnd()) % kBlockSize;
         const Engine max_engine = max_cell_engine(block_dp, i, j);
 
         auto try_decrease_engine = [&](Engine e) noexcept {
@@ -368,84 +525,22 @@ static int64_t reach_power(MapBlock& block_dp, const OptimizeParams& params,
         static_assert(std::is_signed_v<decltype(delta)>);
         if (delta >= 0 || dist(rnd) <= std::exp(delta / t_k)) {
             block_dp[i][j] = placed_engine;
-            total_power += delta;
-        }
-    }
-
-    assert(compare_dp_power(block_dp, total_power));
-    return total_power;
-}
-
-static uint32_t increase_power_greedily(MapBlock& block_dp) noexcept {
-    uint32_t delta = 0;
-    for (size_t i = 0; i < kBlockSize; i++) {
-        for (size_t j = 0; j < kBlockSize; j++) {
-            const Engine max_e = max_cell_engine(block_dp, i, j);
-            if (max_e > block_dp[i][j]) {
-                delta += uint32_t(p[size_t(max_e)]) - uint32_t(p[size_t(block_dp[i][j])]);
-                block_dp[i][j] = max_e;
+            total_power = uint64_t(int64_t(total_power) + delta);
+            if (iteration == best_reached_power_sa_iteration) {
+                assert(total_power == best_reached_power);
+                improve_greedily(block_dp, best_reached_power);
+                break;
             }
         }
     }
 
-    return delta;
-}
-
-struct ParamsBlockOptimizationResult {
-    int64_t max_reached_power;
-    size_t max_reached_power_sa_iteration;
-};
-
-static ParamsBlockOptimizationResult find_block_optimal_params(
-    const MapBlock& block_dp, const OptimizeParams& params) noexcept {
-    auto tmp_block(block_dp);
-
-    const auto [power_after_annealing, max_reached_power, max_reached_power_iteration] =
-        apply_simulated_annealing(tmp_block, params);
-    assert(compare_dp_power(tmp_block, power_after_annealing));
-    const auto first_greedy_delta               = increase_power_greedily(tmp_block);
-    const auto power_from_annealing_with_greedy = power_after_annealing + first_greedy_delta;
-    assert(compare_dp_power(tmp_block, power_from_annealing_with_greedy));
-
-    tmp_block = block_dp;
-
-    reach_power(tmp_block, params, max_reached_power_iteration);
-    assert(compare_dp_power(tmp_block, max_reached_power));
-    const auto second_greedy_delta        = increase_power_greedily(tmp_block);
-    const auto power_from_max_with_greedy = max_reached_power + second_greedy_delta;
-    assert(compare_dp_power(tmp_block, power_from_max_with_greedy));
-
-    return {
-        .max_reached_power = std::max(power_from_annealing_with_greedy, power_from_max_with_greedy),
-        .max_reached_power_sa_iteration =
-            power_from_annealing_with_greedy >= power_from_max_with_greedy
-                ? 0
-                : max_reached_power_iteration,
-    };
-}
-
-static void optimize_block_with_params(MapBlock& block_dp, const OptimizeParams& params,
-                                       [[maybe_unused]] int64_t best_reached_power,
-                                       size_t best_reached_power_sa_iteration) noexcept {
-    [[maybe_unused]] decltype(best_reached_power) debug_power{};
-    if (best_reached_power_sa_iteration != 0) {
-        debug_power = reach_power(block_dp, params, best_reached_power_sa_iteration);
-    } else {
-        [[maybe_unused]] const auto [power_after_annealing, max_reached_power,
-                                     max_reached_power_iteration] =
-            apply_simulated_annealing(block_dp, params);
-        debug_power = power_after_annealing;
-    }
-
-    [[maybe_unused]] const auto greedy_delta = increase_power_greedily(block_dp);
-    assert(debug_power + greedy_delta == best_reached_power);
-
+    assert(total_power == best_reached_power);
     assert(compare_dp_power(block_dp, best_reached_power));
 }
 
 struct BlockOptimizationResult {
-    int64_t block_reached_power;
-    size_t block_reached_power_sa_iteration;
+    uint64_t block_reached_power;
+    size_t best_reached_power_iteration;
     OptimizeParams block_params;
 };
 
@@ -461,8 +556,8 @@ static BlockOptimizationResult optimize_block(const size_t j_shift, const size_t
         std::copy_n(dp[i_shift + i].cbegin() + j_shift, kBlockSize, block[i].begin());
     }
 
-    int64_t best_reached_power             = 0;
-    size_t best_reached_power_sa_iteration = 0;
+    uint64_t best_reached_power             = 0;
+    size_t best_reached_power_iteration = 0;
     OptimizeParams best_params{};
     for (const double gamma : gamma_values) {
         for (const double min_gamma : kMinGammaValues) {
@@ -471,23 +566,27 @@ static BlockOptimizationResult optimize_block(const size_t j_shift, const size_t
                     for (const double third_decrease_probability : kThirdDecreaseProbability) {
                         for (const double min_temperature_for_eng_decrease :
                              kMinTemperatureForEngDecreaseValues) {
-                            for (size_t i = kIterationsPerPararmsPack; i > 0; i--) {
-                                const OptimizeParams params = {
-                                    .seed                        = seed_generator(),
-                                    .gamma                       = gamma,
-                                    .min_gamma                   = min_gamma,
-                                    .first_decrease_probability  = first_decrease_probability,
-                                    .second_decrease_probability = second_decrease_probability,
-                                    .third_decrease_probability  = third_decrease_probability,
-                                    .min_temperature_for_eng_decrease =
-                                        min_temperature_for_eng_decrease,
-                                };
-                                const auto [reached_power, reached_power_sa_iteration] =
-                                    find_block_optimal_params(block, params);
-                                if (reached_power > best_reached_power) {
-                                    best_reached_power              = reached_power;
-                                    best_reached_power_sa_iteration = reached_power_sa_iteration;
-                                    best_params                     = params;
+                            for (const double initial_temp_value : kInitialTempValues) {
+                                for (size_t i = kIterationsPerPararmsPack; i > 0; i--) {
+                                    const OptimizeParams params = {
+                                        .seed                        = seed_generator(),
+                                        .gamma                       = gamma,
+                                        .min_gamma                   = min_gamma,
+                                        .first_decrease_probability  = first_decrease_probability,
+                                        .second_decrease_probability = second_decrease_probability,
+                                        .third_decrease_probability  = third_decrease_probability,
+                                        .min_temperature_for_eng_decrease =
+                                            min_temperature_for_eng_decrease,
+                                        .initial_temp_value = initial_temp_value,
+                                    };
+                                    const auto [max_reached_power, max_reached_power_iteration] =
+                                        apply_simulated_annealing(block, params);
+                                    if (max_reached_power > best_reached_power) {
+                                        best_reached_power = max_reached_power;
+                                        best_reached_power_iteration =
+                                            max_reached_power_iteration;
+                                        best_params = params;
+                                    }
                                 }
                             }
                         }
@@ -497,8 +596,7 @@ static BlockOptimizationResult optimize_block(const size_t j_shift, const size_t
         }
     }
 
-    optimize_block_with_params(block, best_params, best_reached_power,
-                               best_reached_power_sa_iteration);
+    optimize_block_with_params(block, best_params, best_reached_power, best_reached_power_iteration);
 
     for (size_t i = 0; i < kBlockSize; i++) {
         std::copy_n(block[i].cbegin(), kBlockSize, dp[i_shift + i].begin() + j_shift);
@@ -506,7 +604,7 @@ static BlockOptimizationResult optimize_block(const size_t j_shift, const size_t
 
     return {
         .block_reached_power              = best_reached_power,
-        .block_reached_power_sa_iteration = best_reached_power_sa_iteration,
+        .best_reached_power_iteration = best_reached_power_iteration,
         .block_params                     = best_params,
     };
 }
@@ -727,7 +825,7 @@ private:
                    thread_num++, tr.max_power);
             for (uint32_t record_num = 0; const BlockOptimizationResult& rec : tr.records) {
                 printf("        block_num = %" PRIu32 ":\n"
-                       "            block_reached_power_sa_iteration = %" PRIu64 "\n"
+                       "            best_reached_power_iteration = %" PRIu64 "\n"
                        "            block_reached_power = %" PRId64 "\n"
                        "            seed = %" PRIuFAST32 "\n"
                        "            gamma = %.15e\n"
@@ -736,7 +834,7 @@ private:
                        "            second_decrease_probability = %.7f\n"
                        "            third_decrease_probability = %.7f\n"
                        "            min_temperature_for_eng_decrease = %.15e\n",
-                       record_num++, rec.block_reached_power_sa_iteration, rec.block_reached_power,
+                       record_num++, rec.best_reached_power_iteration, rec.block_reached_power,
                        rec.block_params.seed, rec.block_params.gamma, rec.block_params.min_gamma,
                        rec.block_params.first_decrease_probability,
                        rec.block_params.second_decrease_probability,

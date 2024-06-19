@@ -9,8 +9,8 @@ type
 
   TTask = record
     test: longint;
-    n: longint;
-    m: longint;
+    kMaxN: longint;
+    kMaxM: longint;
     wmax: longint;
     p: array [0 .. 4] of longint;
   end;
@@ -20,7 +20,7 @@ var
   i: longint;
 begin
   ReadLn(f, task.test);
-  ReadLn(f, task.n, task.m, task.wmax);
+  ReadLn(f, task.kMaxN, task.kMaxM, task.wmax);
   for i := 0 to 4 do begin
     Read(f, task.p[i]);
   end;
@@ -59,17 +59,17 @@ begin
   if len > 500000 then begin
     exit(-1);
   end;
-  SetLength(a, task.n);
-  for i := 0 to task.n - 1 do begin
-    SetLength(a[i], task.m);
-    for j := 0 to task.m - 1 do begin
+  SetLength(a, task.kMaxN);
+  for i := 0 to task.kMaxN - 1 do begin
+    SetLength(a[i], task.kMaxM);
+    for j := 0 to task.kMaxM - 1 do begin
       a[i, j] := -1;
     end;
   end;
   for i := 0 to len - 1 do begin
     action := solution[i];
-    if (action.x <= 0) or (action.x > task.n) or
-       (action.y <= 0) or (action.x > task.m) or
+    if (action.x <= 0) or (action.x > task.kMaxN) or
+       (action.y <= 0) or (action.x > task.kMaxM) or
        (not (action.t in [0 .. 4])) then begin
       exit(-1);
     end;
@@ -79,7 +79,7 @@ begin
     for j := 0 to 3 do begin
       nx := action.x - 1 + dx[j];
       ny := action.y - 1 + dy[j];
-      if (nx < 0) or (nx >= task.n) or (ny < 0) or (ny >= task.m) then begin
+      if (nx < 0) or (nx >= task.kMaxN) or (ny < 0) or (ny >= task.kMaxM) then begin
         continue;
       end;
       if a[nx, ny] < 0 then begin
@@ -94,8 +94,8 @@ begin
     end;
     a[action.x - 1, action.y - 1] := action.t;
   end;
-  for i := 0 to task.n - 1 do begin
-    for j := 0 to task.m - 1 do begin
+  for i := 0 to task.kMaxN - 1 do begin
+    for j := 0 to task.kMaxM - 1 do begin
       if a[i, j] >= 0 then begin
         Inc(score, task.p[a[i, j]]);
       end;
@@ -165,8 +165,8 @@ begin
     WriteStr(outputName, 'output', test, '.txt');
     ReadData(task, inputName);
     len := 0;
-    for i := 1 to task.n do begin
-      for j := 1 to task.m do begin
+    for i := 1 to task.kMaxN do begin
+      for j := 1 to task.kMaxM do begin
         solution[len].x := i;
         solution[len].y := j;
         solution[len].t := 0;
