@@ -1,0 +1,216 @@
+Checker after step 1
+power = 16
+0 0 0 0 
+0 0 0 0 
+0 0 0 0 
+0 0 0 0 
+Checker after step 2
+power = 16
+0 0 0 0 
+0 0 0 0 
+0 0 0 0 
+0 0 0 0 
+Checker after step 3
+power = 16
+0 0 0 0 
+0 0 0 0 
+0 0 0 0 
+0 0 0 0 
+Checker after step 4
+power = 16
+0 0 0 0 
+0 0 0 0 
+0 0 0 0 
+0 0 0 0 
+Checker after step 5
+power = 16
+0 0 0 0 
+0 0 0 0 
+0 0 0 0 
+0 0 0 0 
+Checker after step 6
+power = 16
+0 0 0 0 
+0 0 0 0 
+0 0 0 0 
+0 0 0 0 
+Checker after step 7
+power = 16
+0 0 0 0 
+0 0 0 0 
+0 0 0 0 
+0 0 0 0 
+Checker after step 8
+power = 16
+0 0 0 0 
+0 0 0 0 
+0 0 0 0 
+0 0 0 0 
+Checker after step 9
+power = 16
+0 0 0 0 
+0 0 0 0 
+0 0 0 0 
+0 0 0 0 
+Checker after step 10
+power = 16
+0 0 0 0 
+0 0 0 0 
+0 0 0 0 
+0 0 0 0 
+Checker after step 11
+power = 16
+0 0 0 0 
+0 0 0 0 
+0 0 0 0 
+0 0 0 0 
+Checker after step 12
+power = 16
+0 0 0 0 
+0 0 0 0 
+0 0 0 0 
+0 0 0 0 
+Checker after step 13
+power = 16
+0 0 0 0 
+0 0 0 0 
+0 0 0 0 
+0 0 0 0 
+Checker after step 14
+power = 16
+0 0 0 0 
+0 0 0 0 
+0 0 0 0 
+0 0 0 0 
+Checker after step 15
+power = 16
+0 0 0 0 
+0 0 0 0 
+0 0 0 0 
+0 0 0 0 
+Checker after step 16
+power = 16
+0 0 0 0 
+0 0 0 0 
+0 0 0 0 
+0 0 0 0 
+Checker after step 17
+power = 31
+0 0 1 0 
+0 0 0 0 
+0 0 0 0 
+0 0 0 0 
+Checker after step 18
+power = 286
+0 0 1 2 
+0 0 0 0 
+0 0 0 0 
+0 0 0 0 
+Checker after step 19
+power = 301
+0 1 1 2 
+0 0 0 0 
+0 0 0 0 
+0 0 0 0 
+Checker after step 20
+power = 316
+0 1 1 2 
+0 0 0 0 
+0 0 0 1 
+0 0 0 0 
+Checker after step 21
+power = 331
+0 1 1 2 
+0 1 0 0 
+0 0 0 1 
+0 0 0 0 
+Checker after step 22
+power = 586
+2 1 1 2 
+0 1 0 0 
+0 0 0 1 
+0 0 0 0 
+Checker after step 23
+power = 826
+2 1 2 2 
+0 1 0 0 
+0 0 0 1 
+0 0 0 0 
+Checker after step 24
+power = 841
+2 1 2 2 
+0 1 0 0 
+0 0 0 1 
+0 1 0 0 
+Checker after step 25
+power = 856
+2 1 2 2 
+0 1 0 0 
+0 0 0 1 
+1 1 0 0 
+Checker after step 26
+power = 1111
+2 1 2 2 
+0 1 0 0 
+0 0 0 1 
+1 1 0 2 
+Checker after step 27
+power = 1366
+2 1 2 2 
+0 1 0 2 
+0 0 0 1 
+1 1 0 2 
+Checker after step 28
+power = 1621
+2 1 2 2 
+2 1 0 2 
+0 0 0 1 
+1 1 0 2 
+Checker after step 29
+power = 5461
+2 1 2 2 
+2 1 0 3 
+0 0 0 1 
+1 1 0 2 
+Checker after step 30
+power = 9556
+2 1 2 2 
+2 1 3 3 
+0 0 0 1 
+1 1 0 2 
+Checker after step 31
+power = 75076
+2 1 2 2 
+2 4 3 3 
+0 0 0 1 
+1 1 0 2 
+Checker after step 32
+power = 79171
+2 1 2 2 
+2 4 3 3 
+3 0 0 1 
+1 1 0 2 
+Checker after step 33
+power = 79426
+2 1 2 2 
+2 4 3 3 
+3 2 0 1 
+1 1 0 2 
+Checker after step 34
+power = 144961
+2 1 2 2 
+2 4 3 3 
+3 2 4 1 
+1 1 0 2 
+Checker after step 35
+power = 145201
+2 1 2 2 
+2 4 3 3 
+3 2 4 1 
+1 2 0 2 
+Checker after step 36
+power = 149041
+2 1 2 2 
+2 4 3 3 
+3 2 4 1 
+1 3 0 2

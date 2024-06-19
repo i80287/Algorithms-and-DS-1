@@ -162,12 +162,12 @@ inline constexpr std::array kMinGammaValues = {
     1e-10,
     5e-11,
 };
-inline constexpr std::array kFirstDownBoundaryValues = {
+inline constexpr std::array kFirstDecreaseProbability = {
     // 0.99, 0.95,
     0.9, 0.87, 0.85, 0.83, 0.8, 0.77, 0.75, 0.73, 0.7, 0.67, 0.6, 0.5,
     // 0.4,  0.3, -1.0
 };
-inline constexpr std::array kSecondDownBoundaryValues = {
+inline constexpr std::array kSecondDecreaseProbability = {
     0.55,
     0.5,
     0.4,
@@ -177,10 +177,10 @@ inline constexpr std::array kSecondDownBoundaryValues = {
     // 0.05,
     0.001,
 };
-inline constexpr std::array kThirdDownBoundaryValues = {
+inline constexpr std::array kThirdDecreaseProbability = {
     0.4, 0.3, 0.2, 0.1, 0.05,
 };
-inline constexpr std::array kEngDownTempBoundaryValues = {
+inline constexpr std::array kMinTemperatureForEngDecreaseValues = {
     1e-5,
     1e-6,
     1e-7,
@@ -416,7 +416,7 @@ struct SimulatedAnnealingResult {
 
 static SimulatedAnnealingResult apply_simulated_annealing(const MapBlock& original_block_dp,
                                                           const OptimizeParams& params) noexcept {
-                                                            MapBlock block_dp(original_block_dp);
+    MapBlock block_dp(original_block_dp);
     std::mt19937 rnd{params.seed};
     std::uniform_real_distribution<double> dist(0, 1);
 
@@ -426,7 +426,7 @@ static SimulatedAnnealingResult apply_simulated_annealing(const MapBlock& origin
             total_power += uint32_t(p[size_t(e)]);
         }
     }
-    uint64_t max_power          = total_power;
+    uint64_t max_power         = total_power;
     size_t max_power_iteration = 0;
     double t_k                 = 1;
     for (size_t iteration = 1; iteration <= kMaxIterationsInBlock;
@@ -459,8 +459,8 @@ static SimulatedAnnealingResult apply_simulated_annealing(const MapBlock& origin
         const auto delta      = new_power - curr_power;
         static_assert(std::is_signed_v<decltype(delta)>);
         if (delta >= 0 || dist(rnd) <= std::exp(delta / t_k)) {
-            block_dp[i][j] = placed_engine;
-            total_power = uint64_t(int64_t(total_power) + delta);
+            block_dp[i][j]           = placed_engine;
+            total_power              = uint64_t(int64_t(total_power) + delta);
             auto greedy_improved_ans = try_improve_greedily(block_dp);
             if (greedy_improved_ans > max_power) {
                 max_power           = greedy_improved_ans;
@@ -493,7 +493,7 @@ static void optimize_block_with_params(MapBlock& block_dp, const OptimizeParams&
             total_power += uint32_t(p[size_t(e)]);
         }
     }
-    double t_k                 = params.initial_temp_value;
+    double t_k = params.initial_temp_value;
     for (size_t iteration = 1; iteration <= kMaxIterationsInBlock;
          t_k              = std::max(t_k * params.gamma, params.min_gamma), iteration++) {
         const size_t i          = uint32_t(rnd()) % kBlockSize;
@@ -525,7 +525,7 @@ static void optimize_block_with_params(MapBlock& block_dp, const OptimizeParams&
         static_assert(std::is_signed_v<decltype(delta)>);
         if (delta >= 0 || dist(rnd) <= std::exp(delta / t_k)) {
             block_dp[i][j] = placed_engine;
-            total_power = uint64_t(int64_t(total_power) + delta);
+            total_power    = uint64_t(int64_t(total_power) + delta);
             if (iteration == best_reached_power_sa_iteration) {
                 assert(total_power == best_reached_power);
                 improve_greedily(block_dp, best_reached_power);
@@ -556,7 +556,7 @@ static BlockOptimizationResult optimize_block(const size_t j_shift, const size_t
         std::copy_n(dp[i_shift + i].cbegin() + j_shift, kBlockSize, block[i].begin());
     }
 
-    uint64_t best_reached_power             = 0;
+    uint64_t best_reached_power         = 0;
     size_t best_reached_power_iteration = 0;
     OptimizeParams best_params{};
     for (const double gamma : gamma_values) {
@@ -582,10 +582,9 @@ static BlockOptimizationResult optimize_block(const size_t j_shift, const size_t
                                     const auto [max_reached_power, max_reached_power_iteration] =
                                         apply_simulated_annealing(block, params);
                                     if (max_reached_power > best_reached_power) {
-                                        best_reached_power = max_reached_power;
-                                        best_reached_power_iteration =
-                                            max_reached_power_iteration;
-                                        best_params = params;
+                                        best_reached_power           = max_reached_power;
+                                        best_reached_power_iteration = max_reached_power_iteration;
+                                        best_params                  = params;
                                     }
                                 }
                             }
@@ -596,16 +595,17 @@ static BlockOptimizationResult optimize_block(const size_t j_shift, const size_t
         }
     }
 
-    optimize_block_with_params(block, best_params, best_reached_power, best_reached_power_iteration);
+    optimize_block_with_params(block, best_params, best_reached_power,
+                               best_reached_power_iteration);
 
     for (size_t i = 0; i < kBlockSize; i++) {
         std::copy_n(block[i].cbegin(), kBlockSize, dp[i_shift + i].begin() + j_shift);
     }
 
     return {
-        .block_reached_power              = best_reached_power,
+        .block_reached_power          = best_reached_power,
         .best_reached_power_iteration = best_reached_power_iteration,
-        .block_params                     = best_params,
+        .block_params                 = best_params,
     };
 }
 
@@ -785,6 +785,7 @@ private:
         auto sdbv  = tostr(kSecondDecreaseProbability);
         auto tdbv  = tostr(kThirdDecreaseProbability);
         auto edtbv = tostr(kMinTemperatureForEngDecreaseValues);
+        auto itv   = tostr(kInitialTempValues);
         // clang-format off
         printf(
             "{\n"
@@ -802,11 +803,12 @@ private:
             "    kFirstDecreaseProbability = %s\n"
             "    kSecondDecreaseProbability = %s\n"
             "    kThirdDecreaseProbability = %s\n"
-            "    kMinTemperatureForEngDecreaseValues = %s\n",
+            "    kMinTemperatureForEngDecreaseValues = %s\n"
+            "    kInitialTempValues = %s\n",
             asctime(localtime(&start_)), std::source_location::current().file_name(), kBlockSize,
             kBlockSkipStep, kMaxIterationsInBlock, kIterationsPerPararmsPack, kThreadsCount,
             kTotalRecordsFromThread, kTotalRecordsFromThreads, gv.c_str(), mgv.c_str(),
-            fdbv.c_str(), sdbv.c_str(), tdbv.c_str(), edtbv.c_str());
+            fdbv.c_str(), sdbv.c_str(), tdbv.c_str(), edtbv.c_str(), itv.c_str());
         // clang-format on
         fflush(stdout);
     }

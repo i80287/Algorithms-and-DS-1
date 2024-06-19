@@ -221,12 +221,12 @@ inline constexpr std::array kMinGammaValues = {
     1e-10,
     5e-11,
 };
-inline constexpr std::array kFirstDownBoundaryValues = {
+inline constexpr std::array kFirstDecreaseProbability = {
     // 0.99, 0.95,
     0.9, 0.87, 0.85, 0.83, 0.8, 0.77, 0.75, 0.73, 0.7, 0.67, 0.6, 0.5,
     // 0.4,  0.3, -1.0
 };
-inline constexpr std::array kSecondDownBoundaryValues = {
+inline constexpr std::array kSecondDecreaseProbability = {
     0.55,
     0.5,
     0.4,
@@ -236,10 +236,10 @@ inline constexpr std::array kSecondDownBoundaryValues = {
     // 0.05,
     0.001,
 };
-inline constexpr std::array kThirdDownBoundaryValues = {
+inline constexpr std::array kThirdDecreaseProbability = {
     0.4, 0.3, 0.2, 0.1, 0.05,
 };
-inline constexpr std::array kEngDownTempBoundaryValues = {
+inline constexpr std::array kMinTemperatureForEngDecreaseValues = {
     1e-5,
     1e-6,
     1e-7,
@@ -578,10 +578,10 @@ static std::array<SearchResult, kTopKBestResults> runner(size_t slice_index) noe
     }
 
     for (uint32_t iter = kItersPerCombination; iter > 0; iter--) {
-        for (const double eng_down_temp_boundary : kEngDownTempBoundaryValues) {
-            for (const double third_down_boundary : kThirdDownBoundaryValues) {
-                for (const double second_down_boundary : kSecondDownBoundaryValues) {
-                    for (const double first_down_boundary : kFirstDownBoundaryValues) {
+        for (const double eng_down_temp_boundary : kMinTemperatureForEngDecreaseValues) {
+            for (const double third_down_boundary : kThirdDecreaseProbability) {
+                for (const double second_down_boundary : kSecondDecreaseProbability) {
+                    for (const double first_down_boundary : kFirstDecreaseProbability) {
                         for (const double min_gamma : kMinGammaValues) {
                             for (const double gamma : gamma_values) {
                                 for (const double initial_temp_value : kInitialTempValues) {
@@ -765,10 +765,10 @@ private:
         auto itv   = tostr(kInitialTempValues);
         auto gv    = tostr(kGammaValues);
         auto mgv   = tostr(kMinGammaValues);
-        auto fdbv  = tostr(kFirstDownBoundaryValues);
-        auto sdbv  = tostr(kSecondDownBoundaryValues);
-        auto tdbv  = tostr(kThirdDownBoundaryValues);
-        auto edtbv = tostr(kEngDownTempBoundaryValues);
+        auto fdbv  = tostr(kFirstDecreaseProbability);
+        auto sdbv  = tostr(kSecondDecreaseProbability);
+        auto tdbv  = tostr(kThirdDecreaseProbability);
+        auto edtbv = tostr(kMinTemperatureForEngDecreaseValues);
         printf(
             "{\n"
             "    start_time = %s"
@@ -782,18 +782,18 @@ private:
             "    kInitialTempValues = %s\n"
             "    kGammaValues = %s\n"
             "    kMinGammaValues = %s\n"
-            "    kFirstDownBoundaryValues = %s\n"
-            "    kSecondDownBoundaryValues = %s\n"
-            "    kThirdDownBoundaryValues = %s\n"
-            "    kEngDownTempBoundaryValues = %s\n"
+            "    kFirstDecreaseProbability = %s\n"
+            "    kSecondDecreaseProbability = %s\n"
+            "    kThirdDecreaseProbability = %s\n"
+            "    kMinTemperatureForEngDecreaseValues = %s\n"
             "    solve(...) calls per gamma value = %zu\n",
             asctime(localtime(&start_)), std::source_location::current().file_name(), kTotalIters,
             kThreadsCount, kGammaValuesPerThread, kItersPerCombination, kUseDownEngineHeuristic,
             kTopKBestResults, itv.c_str(), gv.c_str(), mgv.c_str(), fdbv.c_str(), sdbv.c_str(),
             tdbv.c_str(), edtbv.c_str(),
             kInitialTempValues.size() * kItersPerCombination * kMinGammaValues.size() *
-                kFirstDownBoundaryValues.size() * kSecondDownBoundaryValues.size() *
-                kThirdDownBoundaryValues.size() * kEngDownTempBoundaryValues.size());
+                kFirstDecreaseProbability.size() * kSecondDecreaseProbability.size() *
+                kThirdDecreaseProbability.size() * kMinTemperatureForEngDecreaseValues.size());
         fflush(stdout);
     }
     void print_formatted_results(const TaskResults& results) const noexcept {
