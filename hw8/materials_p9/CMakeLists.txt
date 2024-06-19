@@ -11,6 +11,7 @@ add_executable(materials_p9
         #        p9_parallel.cpp
         #        p9_parallel_matrix_move.cpp
         solve/p9_generic_gen.cpp
+        p9_parallel_matrix_move.cpp
 )
 
 # Empty by default

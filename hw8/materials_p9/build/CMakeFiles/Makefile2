@@ -81,12 +81,12 @@ clean: CMakeFiles/materials_p9.dir/clean
 CMakeFiles/materials_p9.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/materials_p9.dir/build.make CMakeFiles/materials_p9.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/materials_p9.dir/build.make CMakeFiles/materials_p9.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/build/CMakeFiles --progress-num=1,2 "Built target materials_p9"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/build/CMakeFiles --progress-num=1,2,3 "Built target materials_p9"
 .PHONY : CMakeFiles/materials_p9.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/materials_p9.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/build/CMakeFiles 2
+	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/build/CMakeFiles 3
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/materials_p9.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/build/CMakeFiles 0
 .PHONY : CMakeFiles/materials_p9.dir/rule

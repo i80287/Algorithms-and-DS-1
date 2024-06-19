@@ -129,6 +129,30 @@ materials_p9/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/materials_p9.dir/build.make CMakeFiles/materials_p9.dir/build
 .PHONY : materials_p9/fast
 
+p9_parallel_matrix_move.o: p9_parallel_matrix_move.cpp.o
+.PHONY : p9_parallel_matrix_move.o
+
+# target to build an object file
+p9_parallel_matrix_move.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/materials_p9.dir/build.make CMakeFiles/materials_p9.dir/p9_parallel_matrix_move.cpp.o
+.PHONY : p9_parallel_matrix_move.cpp.o
+
+p9_parallel_matrix_move.i: p9_parallel_matrix_move.cpp.i
+.PHONY : p9_parallel_matrix_move.i
+
+# target to preprocess a source file
+p9_parallel_matrix_move.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/materials_p9.dir/build.make CMakeFiles/materials_p9.dir/p9_parallel_matrix_move.cpp.i
+.PHONY : p9_parallel_matrix_move.cpp.i
+
+p9_parallel_matrix_move.s: p9_parallel_matrix_move.cpp.s
+.PHONY : p9_parallel_matrix_move.s
+
+# target to generate assembly for a file
+p9_parallel_matrix_move.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/materials_p9.dir/build.make CMakeFiles/materials_p9.dir/p9_parallel_matrix_move.cpp.s
+.PHONY : p9_parallel_matrix_move.cpp.s
+
 solve/p9_generic_gen.o: solve/p9_generic_gen.cpp.o
 .PHONY : solve/p9_generic_gen.o
 
@@ -162,6 +186,9 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... materials_p9"
+	@echo "... p9_parallel_matrix_move.o"
+	@echo "... p9_parallel_matrix_move.i"
+	@echo "... p9_parallel_matrix_move.s"
 	@echo "... solve/p9_generic_gen.o"
 	@echo "... solve/p9_generic_gen.i"
 	@echo "... solve/p9_generic_gen.s"

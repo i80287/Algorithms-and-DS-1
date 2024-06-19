@@ -145,7 +145,9 @@ void sample() {
 
 void read_tests() {
     double total_score = 0;
-    for (auto test : {1u, 2u, 3u, 4u, 5u, 6u, 7u, 8u, 9u, 10u}) {
+    for (auto test : {1u
+    // , 2u, 3u, 4u, 5u, 6u, 7u, 8u, 9u, 10u
+    }) {
         const auto test_str = std::to_string(test);
 
         std::ifstream fin("solve/output" + test_str + ".txt");

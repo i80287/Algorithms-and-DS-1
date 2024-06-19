@@ -4,5 +4,11 @@
   "command": "/usr/bin/c++ -D__VSCODE_LOCALGHOST__=1 -I/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/. -g -std=gnu++23 -g3 -march=native -Wall -Wextra -Wcast-qual -Wpedantic -Wshift-overflow -Wunused -Wconversion -Wshadow -Wnull-dereference -Wundef -Wwrite-strings -Wsign-conversion -Wmissing-noreturn -Wunreachable-code -Wcast-align -Warray-bounds -pedantic-errors -fsized-deallocation -o CMakeFiles/materials_p9.dir/solve/p9_generic_gen.cpp.o -c /mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/solve/p9_generic_gen.cpp",
   "file": "/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/solve/p9_generic_gen.cpp",
   "output": "CMakeFiles/materials_p9.dir/solve/p9_generic_gen.cpp.o"
+},
+{
+  "directory": "/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/build",
+  "command": "/usr/bin/c++ -D__VSCODE_LOCALGHOST__=1 -I/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/. -g -std=gnu++23 -g3 -march=native -Wall -Wextra -Wcast-qual -Wpedantic -Wshift-overflow -Wunused -Wconversion -Wshadow -Wnull-dereference -Wundef -Wwrite-strings -Wsign-conversion -Wmissing-noreturn -Wunreachable-code -Wcast-align -Warray-bounds -pedantic-errors -fsized-deallocation -o CMakeFiles/materials_p9.dir/p9_parallel_matrix_move.cpp.o -c /mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/p9_parallel_matrix_move.cpp",
+  "file": "/mnt/E-1.5/projects/c++/Algorithms-and-DS-1/hw8/materials_p9/p9_parallel_matrix_move.cpp",
+  "output": "CMakeFiles/materials_p9.dir/p9_parallel_matrix_move.cpp.o"
 }
 ]
